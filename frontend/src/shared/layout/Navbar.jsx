@@ -32,7 +32,7 @@ import janakpurImg from "../../assets/location/janakpur.png";
 import kathmanduImg from "../../assets/location/kathmandu.png";
 import lalitpurImg from "../../assets/location/lalitpur.png";
 import pokharaImg from "../../assets/location/pokhara.png";
-import dhankutaImg from "../../assets/location/dhankuta.png";
+import dhankutaImg from "../../assets/location/Dhankuta.png";
 import damakImg from "../../assets/location/damak.png";
 import lumbiniImg from "../../assets/location/lumbini.png";
 import birgunjImg from "../../assets/location/birgunj.png";
