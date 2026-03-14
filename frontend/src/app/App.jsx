@@ -1,4 +1,4 @@
-import React from "react";
+import React,{useState ,useEffect} from "react";
 import { Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import Login from "../features/auth/pages/Login.jsx";
@@ -32,7 +32,11 @@ import HallAdminMessages from "../features/halladmin/pages/Messages.jsx";
 import SeatLayoutPreview from "../features/halladmin/components/SeatLayoutPreview.jsx";
 import { AuthProvider } from "../shared/context/AuthContext.jsx";
 import { ThemeProvider, useTheme } from "../shared/context/ThemeContext.jsx";
-import { ProtectedRoute, PublicOnlyRoute } from "../shared/routes/RouteGuards.jsx";
+import {
+  ProtectedRoute,
+  PublicOnlyRoute,
+} from "../shared/routes/RouteGuards.jsx";
+import PageLoader from "../shared/components/PageLoader.jsx";
 
 const ThemedToaster = () => {
   const { isDark } = useTheme();
@@ -65,6 +69,21 @@ const ThemedToaster = () => {
 };
 // done
 const App = () => {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const handle = window.requestAnimationFrame
+      ? window.requestAnimationFrame(() => setLoading(false))
+      : setTimeout(() => setLoading(false), 400);
+    return () => {
+      if (handle && handle.cancel) handle.cancel();
+    };
+  }, []);
+
+  if (loading) {
+    return <PageLoader />;
+  }
+
   return (
     <ThemeProvider>
       <AuthProvider>
@@ -84,9 +103,18 @@ const App = () => {
             <Route path="/hall-staff/apply" element={<HallStaffApply />} />
             <Route element={<ProtectedRoute />}>
               <Route path="/profile" element={<Profile />} />
-              <Route path="/payment/esewa/success" element={<PaymentEsewaSuccess />} />
-              <Route path="/payment/esewa/failure" element={<PaymentEsewaFailure />} />
-              <Route path="/payment-success" element={<PaymentEsewaSuccess />} />
+              <Route
+                path="/payment/esewa/success"
+                element={<PaymentEsewaSuccess />}
+              />
+              <Route
+                path="/payment/esewa/failure"
+                element={<PaymentEsewaFailure />}
+              />
+              <Route
+                path="/payment-success"
+                element={<PaymentEsewaSuccess />}
+              />
               <Route path="/payment-failed" element={<PaymentEsewaFailure />} />
             </Route>
           </Route>
@@ -103,7 +131,9 @@ const App = () => {
             <Route path="/reg" element={<SeatLayoutPreview />} />
           </Route>
 
-          <Route element={<ProtectedRoute allowedRoles={["hall-admin", "admin"]} />}>
+          <Route
+            element={<ProtectedRoute allowedRoles={["hall-admin", "admin"]} />}
+          >
             <Route path="/halladmin" element={<HallAdminLayout />}>
               <Route index element={<HallAdminDashboard />} />
               <Route path="movies" element={<Movies />} />
