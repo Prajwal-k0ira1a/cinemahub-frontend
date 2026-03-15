@@ -4,6 +4,12 @@ import { API_BASE_URL } from "../config/api.js";
 
 export const AuthContext = createContext();
 
+const getStoredToken = () => localStorage.getItem("token") || localStorage.getItem("authToken");
+const clearStoredToken = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("authToken");
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -14,8 +20,10 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       // Make a request with credentials to check if cookie is valid
+      const token = getStoredToken();
       const response = await axios.get(`${API_BASE_URL}/user/me`, {
         withCredentials: true,
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
 
       if (response.data.success) {
@@ -50,6 +58,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setUser(null);
       setIsAuthenticated(false);
+      clearStoredToken();
       window.location.href = "/login";
     }
   };

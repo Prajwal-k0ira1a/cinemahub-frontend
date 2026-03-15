@@ -791,7 +791,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="sticky top-0 left-0 z-50 w-full px-4 py-4 md:px-6">
+    <nav className=" bg-black sticky top-0 left-0 z-50 w-full px-4 py-4 md:px-6">
       <div
         className={`mx-auto flex max-w-6xl items-center justify-between rounded-2xl border px-4 py-3 transition-all duration-300 md:px-5 ${shellClass}`}
       >
