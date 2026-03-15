@@ -10,8 +10,6 @@ import {
   useMapEvents,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { useTheme } from "../context/ThemeContext.jsx";
-
 const DEFAULT_CENTER = [27.7172, 85.324];
 
 const parseCoordinatePair = (value) => {
@@ -59,7 +57,6 @@ const MapViewportUpdater = ({ center, zoom }) => {
 };
 
 const LocationPickerMap = ({ locationValue, onLocationSelect }) => {
-  const { isDark } = useTheme();
   const initialCoordinatePair = useMemo(
     () => parseCoordinatePair(locationValue),
     [locationValue],
@@ -218,13 +215,13 @@ const LocationPickerMap = ({ locationValue, onLocationSelect }) => {
           style={{ height: "100%", width: "100%" }}
         >
           <LayersControl position="topright">
-            <LayersControl.BaseLayer checked={!isDark} name="Detailed Streets">
+            <LayersControl.BaseLayer checked name="Detailed Streets">
               <TileLayer
                 attribution='&copy; OpenStreetMap contributors &copy; CARTO'
                 url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
               />
             </LayersControl.BaseLayer>
-            <LayersControl.BaseLayer checked={isDark} name="Dark Streets">
+            <LayersControl.BaseLayer name="Dark Streets">
               <TileLayer
                 attribution='&copy; OpenStreetMap contributors &copy; CARTO'
                 url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"

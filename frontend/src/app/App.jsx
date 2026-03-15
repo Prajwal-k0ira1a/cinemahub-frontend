@@ -31,43 +31,12 @@ import HallAdminDashboard from "../features/halladmin/pages/Dashboard.jsx";
 import HallAdminMessages from "../features/halladmin/pages/Messages.jsx";
 import SeatLayoutPreview from "../features/halladmin/components/SeatLayoutPreview.jsx";
 import { AuthProvider } from "../shared/context/AuthContext.jsx";
-import { ThemeProvider, useTheme } from "../shared/context/ThemeContext.jsx";
 import {
   ProtectedRoute,
   PublicOnlyRoute,
 } from "../shared/routes/RouteGuards.jsx";
 import PageLoader from "../shared/components/PageLoader.jsx";
 
-const ThemedToaster = () => {
-  const { isDark } = useTheme();
-  return (
-    <Toaster
-      position="top-right"
-      reverseOrder={false}
-      gutter={8}
-      toastOptions={{
-        duration: 3000,
-        style: {
-          background: "#363636",
-          color: "#fff",
-        },
-        success: {
-          duration: 3000,
-          style: {
-            background: "#10b981",
-          },
-        },
-        error: {
-          duration: 3000,
-          style: {
-            background: "#ef4444",
-          },
-        },
-      }}
-    />
-  );
-};
-// done
 const App = () => {
   const [loading, setLoading] = useState(true);
 
@@ -85,10 +54,32 @@ const App = () => {
   }
 
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <ThemedToaster />
-        <Routes>
+    <AuthProvider>
+      <Toaster
+        position="top-right"
+        reverseOrder={false}
+        gutter={8}
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: "#363636",
+            color: "#fff",
+          },
+          success: {
+            duration: 3000,
+            style: {
+              background: "#10b981",
+            },
+          },
+          error: {
+            duration: 3000,
+            style: {
+              background: "#ef4444",
+            },
+          },
+        }}
+      />
+      <Routes>
           <Route element={<Layout />}>
             <Route path="/" element={<Landing />} />
             <Route path="/movies" element={<MoviesPage />} />
@@ -150,7 +141,6 @@ const App = () => {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AuthProvider>
-    </ThemeProvider>
   );
 };
 

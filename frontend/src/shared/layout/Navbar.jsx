@@ -18,7 +18,6 @@ import {
   Tent,
 } from "lucide-react";
 import { NavLink, Link, useLocation } from "react-router-dom";
-import { useTheme } from "../context/ThemeContext.jsx";
 import { useAuth } from "../hooks/useAuth.js";
 import { API_BASE_URL } from "../config/api.js";
 import "../../index.css";
@@ -36,6 +35,7 @@ import dhankutaImg from "../../assets/location/Dhankuta.png";
 import damakImg from "../../assets/location/damak.png";
 import lumbiniImg from "../../assets/location/lumbini.png";
 import birgunjImg from "../../assets/location/birgunj.png";
+import logo from "../../assets/logo.png";
 const NAV_ITEMS = [
   { to: "/", label: "Home", end: true },
   { to: "/movies", label: "Movies" },
@@ -568,7 +568,6 @@ const Navbar = () => {
   });
   const [detectingLocation, setDetectingLocation] = useState(false);
   const [locationError, setLocationError] = useState("");
-  const { isDark } = useTheme();
   const { user, isAuthenticated, loading, logout } = useAuth();
   const location = useLocation();
   const profileRef = useRef(null);
@@ -606,37 +605,22 @@ const Navbar = () => {
     );
   }, [citySearch]);
 
-  const shellClass = isDark
-    ? scrolled
-      ? "border-white/20 bg-secondary/95 shadow-[0_10px_28px_rgba(0,0,0,0.35)] backdrop-blur-lg"
-      : "border-white/10 bg-secondary/80 backdrop-blur-md"
-    : scrolled
-      ? "border-black/10 bg-white/95 shadow-[0_10px_28px_rgba(0,0,0,0.12)] backdrop-blur-lg"
-      : "border-black/10 bg-white/90 backdrop-blur-md";
+  const shellClass = scrolled
+    ? "border-black/10 bg-white/95 shadow-[0_10px_28px_rgba(0,0,0,0.12)] backdrop-blur-lg"
+    : "border-black/10 bg-white/90 backdrop-blur-md";
 
-  const tabShellClass = isDark
-    ? "border-white/10 bg-primary/40"
-    : "border-black/10 bg-black/[0.03]";
+  const tabShellClass = "border-black/10 bg-black/[0.03]";
 
-  const subtleBtnClass = isDark
-    ? "border-white/10 bg-primary/40 hover:border-white/20 hover:bg-white/10"
-    : "border-black/10 bg-black/[0.03] hover:border-black/20 hover:bg-black/[0.06]";
+  const subtleBtnClass =
+    "border-black/10 bg-black/[0.03] hover:border-black/20 hover:bg-black/[0.06]";
 
-  const signInClass = isDark
-    ? "border-white/15 hover:bg-white/10"
-    : "border-black/15 hover:bg-black/[0.05]";
+  const signInClass = "border-black/15 hover:bg-black/[0.05]";
 
-  const mobilePanelClass = isDark
-    ? "border-white/10 bg-secondary/95"
-    : "border-black/10 bg-white/95";
+  const mobilePanelClass = "border-black/10 bg-white/95";
 
-  const profilePanelClass = isDark
-    ? "border-white/10 bg-secondary/95"
-    : "border-black/10 bg-white/95";
+  const profilePanelClass = "border-black/10 bg-white/95";
 
-  const locationPanelClass = isDark
-    ? "border-white/15 bg-[#111827]"
-    : "border-black/15 bg-white";
+  const locationPanelClass = "border-black/15 bg-white";
 
   const navInactiveClass = "nav-item text-text-secondary";
   const navActiveClass = "nav-item nav-item-active";
@@ -817,7 +801,7 @@ const Navbar = () => {
           className="inline-flex items-center gap-2 text-lg font-black tracking-tight text-text-primary md:text-xl"
         >
           <span className="inline-flex h-7 w-7 items-center justify-center rounded bg-accent text-white">
-            <Ticket size={15} />
+           <img src={logo} alt="Cinema Hub Logo" />
           </span>
           Cinema Hub
         </Link>

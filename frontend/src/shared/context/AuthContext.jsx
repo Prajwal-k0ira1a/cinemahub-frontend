@@ -55,6 +55,10 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = (userData, token) => {
+    if (token) {
+      localStorage.setItem("token", token);
+      localStorage.setItem("authToken", token);
+    }
     setUser(userData);
     setIsAuthenticated(true);
   };
