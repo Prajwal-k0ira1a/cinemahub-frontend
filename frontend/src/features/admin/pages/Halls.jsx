@@ -49,7 +49,7 @@ const Halls = () => {
 
   const fetchHalls = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/hall/get`, {
+      const response = await axios.get(`${API_BASE_URL}/hall/get-Active`, {
         withCredentials: true,
       });
       if (response.data.success) {

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Edit2, Trash2, Search, Plus, X, Eye, EyeOff } from "lucide-react";
 import { API_BASE_URL } from "../../../shared/config/api";
+import PageLoader from "../../../shared/components/PageLoader.jsx";
 
 const User = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -28,7 +29,11 @@ const User = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(`${API_BASE_URL}/user/get`);
+      const token = localStorage.getItem("token") || localStorage.getItem("authToken");
+      const response = await fetch(`${API_BASE_URL}/user/get`, {
+        credentials: "include",
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
       if (!response.ok) {
         throw new Error("Failed to fetch users");
       }
@@ -71,6 +76,7 @@ const User = () => {
     if (hasRequiredFields) {
       try {
         if (isEditing) {
+          const token = localStorage.getItem("token") || localStorage.getItem("authToken");
           const body = {
             fullname: formData.name,
             email: formData.email,
@@ -85,6 +91,7 @@ const User = () => {
               method: "PUT",
               headers: {
                 "Content-Type": "application/json",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
               },
               credentials: "include",
               body: JSON.stringify(body),
@@ -95,10 +102,12 @@ const User = () => {
           }
         } else {
           // Add new user - Note: Backend may require different fields
+          const token = localStorage.getItem("token") || localStorage.getItem("authToken");
           const response = await fetch(`${API_BASE_URL}/user/register`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
             body: JSON.stringify({
               fullname: formData.name,
@@ -142,9 +151,11 @@ const User = () => {
   const handleDeleteUser = async (id) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
       try {
+        const token = localStorage.getItem("token") || localStorage.getItem("authToken");
         const response = await fetch(`${API_BASE_URL}/user/delete/${id}`, {
           method: "DELETE",
           credentials: "include",
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
         if (!response.ok) {
           throw new Error("Failed to delete user");
@@ -201,9 +212,7 @@ const User = () => {
           </div>
         )}
         {loading ? (
-          <div className="flex h-64 items-center justify-center">
-            <p className="text-slate-400">Loading users...</p>
-          </div>
+          <PageLoader />
         ) : filteredUsers.length === 0 ? (
           <div className="flex h-64 items-center justify-center">
             <p className="text-slate-400">No users found</p>
