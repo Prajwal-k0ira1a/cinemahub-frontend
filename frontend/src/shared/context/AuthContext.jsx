@@ -4,10 +4,15 @@ import { API_BASE_URL } from "../config/api.js";
 
 export const AuthContext = createContext();
 
-const getStoredToken = () => localStorage.getItem("token") || localStorage.getItem("authToken");
+const getStoredToken = () =>
+  sessionStorage.getItem("sessionToken") ||
+  localStorage.getItem("token") ||
+  localStorage.getItem("authToken");
 const clearStoredToken = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("authToken");
+  sessionStorage.removeItem("sessionToken");
+  delete axios.defaults.headers.common.Authorization;
 };
 
 export const AuthProvider = ({ children }) => {
@@ -21,9 +26,14 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       // Make a request with credentials to check if cookie is valid
       const token = getStoredToken();
+      if (token) {
+        axios.defaults.headers.common.Authorization = `Bearer ${token}`;
+      } else {
+        delete axios.defaults.headers.common.Authorization;
+      }
+
       const response = await axios.get(`${API_BASE_URL}/user/me`, {
         withCredentials: true,
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
 
       if (response.data.success) {
@@ -67,6 +77,11 @@ export const AuthProvider = ({ children }) => {
     if (token) {
       localStorage.setItem("token", token);
       localStorage.setItem("authToken", token);
+      // Always also store a session-scoped token (clears on tab close) to reduce exposure.
+      sessionStorage.setItem("sessionToken", token);
+      axios.defaults.headers.common.Authorization = `Bearer ${token}`;
+    } else {
+      delete axios.defaults.headers.common.Authorization;
     }
     setUser(userData);
     setIsAuthenticated(true);

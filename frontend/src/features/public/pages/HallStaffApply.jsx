@@ -152,6 +152,10 @@ const HallStaffApply = () => {
       toast.error(err);
       return;
     }
+    const token =
+      sessionStorage.getItem("sessionToken") ||
+      localStorage.getItem("token") ||
+      localStorage.getItem("authToken");
     setSubmitting(true);
     try {
       const payload = {
@@ -161,6 +165,7 @@ const HallStaffApply = () => {
       };
       const response = await axios.post(`${API_BASE_URL}/hall/apply`, payload, {
         withCredentials: true,
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
       if (response.data.success) {
         toast.success("Application submitted");
