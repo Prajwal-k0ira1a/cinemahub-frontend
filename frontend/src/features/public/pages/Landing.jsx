@@ -227,7 +227,7 @@ const MovieCard = ({ image, title, genre, runtime, rating }) => (
         <span className="rounded-full border border-white/10 px-3 py-1">
           Book now
         </span>
-        <span className="text-accent">Showtimes →</span>
+        <span className="text-accent">Showtimes â†’</span>
       </div>
     </div>
   </article>

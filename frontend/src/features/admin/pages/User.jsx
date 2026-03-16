@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Edit2, Trash2, Search, Plus, X } from "lucide-react";
+import { Edit2, Trash2, Search, Plus, X, Eye, EyeOff } from "lucide-react";
 import { API_BASE_URL } from "../../../shared/config/api";
 
 const User = () => {
@@ -10,10 +10,11 @@ const User = () => {
 
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    phone: "",
+    password: "",
     status: "active",
     role: "user",
   });
@@ -55,7 +56,7 @@ const User = () => {
     setFormData({
       name: "",
       email: "",
-      phone: "",
+      password: "",
       status: "active",
       role: "user",
     });
@@ -63,10 +64,21 @@ const User = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.name && formData.email && formData.phone) {
+    const isEditing = Boolean(editingUser);
+    const hasRequiredFields =
+      formData.name && formData.email && (isEditing || formData.password);
+
+    if (hasRequiredFields) {
       try {
-        if (editingUser) {
-          // Update user role
+        if (isEditing) {
+          const body = {
+            fullname: formData.name,
+            email: formData.email,
+            role: formData.role,
+            status: formData.status,
+          };
+          if (formData.password) body.password = formData.password;
+
           const response = await fetch(
             `${API_BASE_URL}/user/update/${editingUser.id}`,
             {
@@ -75,9 +87,7 @@ const User = () => {
                 "Content-Type": "application/json",
               },
               credentials: "include",
-              body: JSON.stringify({
-                role: formData.role,
-              }),
+              body: JSON.stringify(body),
             },
           );
           if (!response.ok) {
@@ -93,7 +103,7 @@ const User = () => {
             body: JSON.stringify({
               fullname: formData.name,
               email: formData.email,
-              password: "defaultPassword123", // You may want to handle this differently
+              password: formData.password,
               agreeTerm: true,
             }),
           });
@@ -105,7 +115,7 @@ const User = () => {
         setFormData({
           name: "",
           email: "",
-          phone: "",
+          password: "",
           status: "active",
           role: "user",
         });
@@ -122,7 +132,7 @@ const User = () => {
     setFormData({
       name: user.fullname || "",
       email: user.email || "",
-      phone: user.phone || "",
+      password: "",
       status: user.status || "active",
       role: user.role || "user",
     });
@@ -210,7 +220,7 @@ const User = () => {
                     EMAIL
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">
-                    PHONE
+                    PASSWORD
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">
                     STATUS
@@ -239,7 +249,9 @@ const User = () => {
                       <p className="text-sm text-slate-300">{user.email}</p>
                     </td>
                     <td className="px-6 py-4">
-                      <p className="text-sm text-slate-300">{user.phone}</p>
+                      <p className="text-sm text-slate-300">
+                        {user.password ? "••••••" : "Not set"}
+                      </p>
                     </td>
                     <td className="px-6 py-4">
                       <span
@@ -347,18 +359,28 @@ const User = () => {
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-300">
-                    Phone
+                    Password
                   </label>
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) =>
-                      setFormData({ ...formData, phone: e.target.value })
-                    }
-                    placeholder="Enter phone number"
-                    required
-                    className="w-full rounded-lg bg-black border border-white/10 p-3 text-white focus:border-[#D72626] focus:outline-none"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={formData.password}
+                      onChange={(e) =>
+                        setFormData({ ...formData, password: e.target.value })
+                      }
+                      placeholder={editingUser ? "Leave blank to keep current" : "Enter password"}
+                      required={!editingUser}
+                      className="w-full rounded-lg bg-black border border-white/10 p-3 pr-11 text-white focus:border-[#D72626] focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute inset-y-0 right-2 flex items-center text-slate-400 hover:text-white transition"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-300">
