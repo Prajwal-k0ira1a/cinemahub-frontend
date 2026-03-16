@@ -803,7 +803,7 @@ const Navbar = () => {
           <span className="inline-flex h-7 w-7 items-center justify-center rounded bg-accent text-white">
            <img src={logo} alt="Cinema Hub Logo" />
           </span>
-          Cinema Hub
+         
         </Link>
 
         <ul
