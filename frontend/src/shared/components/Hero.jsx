@@ -220,7 +220,7 @@ const MovieMetadata = ({ movie }) => (
 const MovieTitle = ({ title }) => (
   <motion.h1
     variants={fadeInUp}
-    className="text-white text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-[0.9] tracking-tighter mb-6 uppercase"
+    className="text-white text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-[0.95] tracking-tighter mb-6 uppercase"
     style={{
       textShadow:
         "0 0 40px rgba(229, 9, 20, 0.4), 0 4px 20px rgba(0, 0, 0, 0.8)",
@@ -345,7 +345,7 @@ const Hero = () => {
   return (
     <div className="relative ">
       {/* ==================== HERO SECTION ==================== */}
-      <section className="relative w-[100%] min-h-screen flex items-center justify-center overflow-hidden bg-primary text-white">
+      <section className="relative w-full min-h-[70vh] sm:min-h-[80vh] md:min-h-screen flex items-center justify-center overflow-hidden bg-primary text-white">
         {/* Background Image */}
         <AnimatePresence mode="wait">
           <motion.div
@@ -357,7 +357,7 @@ const Hero = () => {
             transition={{ duration: 1 }}
           >
             <div
-              className="absolute inset-0 bg-cover bg-right"
+              className="absolute inset-0 bg-cover bg-center sm:bg-right"
               style={{ backgroundImage: `url('${activeMovie.moviePoster}')` }}
             />
 
@@ -370,7 +370,7 @@ const Hero = () => {
         </AnimatePresence>
 
         {/* Content Container - Moved Further Left */}
-        <div className="relative z-20 w-full py-10 pl-6 lg:pl-12 pr-6">
+        <div className="relative z-20 w-full py-12 px-4 sm:px-6 md:px-10 lg:px-12">
           <AnimatePresence mode="wait">
             <motion.div
               key={`content-${activeMovie.id}`}
@@ -378,7 +378,7 @@ const Hero = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 50 }}
               transition={{ duration: 0.6 }}
-              className="max-w-xl"
+              className="max-w-xl sm:max-w-2xl lg:max-w-3xl space-y-4"
             >
               {/* Spotlight Label */}
               <motion.div
@@ -395,7 +395,7 @@ const Hero = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="text-5xl sm:text-6xl md:text-7xl font-black text-white mb-6 leading-tight drop-shadow-lg"
+                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white mb-6 leading-tight drop-shadow-lg"
               >
                 {activeMovie.movie_title}
               </motion.h1>
@@ -405,7 +405,7 @@ const Hero = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="flex flex-wrap gap-3 mb-6"
+                className="flex flex-wrap gap-2 sm:gap-3 mb-6"
               >
                 <span className="inline-flex items-center gap-2 text-sm text-white font-semibold bg-white/10 backdrop-blur px-3 py-1.5 rounded-full border border-white/20">
                   <TvMinimalPlay size={14} className="text-accent" />
@@ -444,7 +444,7 @@ const Hero = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                className="text-white text-base leading-relaxed max-w-lg mb-8 drop-shadow-lg"
+                className="text-white text-sm sm:text-base leading-relaxed max-w-2xl mb-8 drop-shadow-lg"
               >
                 {activeMovie.description}
               </motion.p>
@@ -454,12 +454,12 @@ const Hero = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
-                className="flex gap-4"
+                className="flex flex-wrap gap-3 sm:gap-4"
               >
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-8 py-3 rounded-full bg-accent text-white font-bold flex items-center gap-2 hover:bg-accent/90 transition-colors drop-shadow-lg"
+                  className="w-full sm:w-auto px-8 py-3 rounded-full bg-accent text-white font-bold flex items-center justify-center gap-2 hover:bg-accent/90 transition-colors drop-shadow-lg"
                 >
                   <Play size={20} fill="currentColor" />
                   Watch Now
@@ -467,7 +467,7 @@ const Hero = () => {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-8 py-3 rounded-full border-2 border-white text-white font-bold hover:bg-white/10 transition-all drop-shadow-lg"
+                  className="w-full sm:w-auto px-8 py-3 rounded-full border-2 border-white text-white font-bold hover:bg-white/10 transition-all drop-shadow-lg"
                 >
                   Detail →
                 </motion.button>

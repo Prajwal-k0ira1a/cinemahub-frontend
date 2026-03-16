@@ -848,8 +848,22 @@ const Navbar = () => {
 
             {locationOpen && (
               <div
-                className={`absolute -right-55 mt-8 w-[1280px] max-w-[92vw] rounded-2xl border p-4 shadow-2xl ${locationPanelClass}`}
+                className={`absolute left-1/2 -translate-x-1/2 lg:left-auto lg:translate-x-0 lg:right-0 mt-8 w-full max-w-5xl rounded-2xl border p-4 shadow-2xl ${locationPanelClass}`}
+                style={{ width: "min(92vw, 960px)" }}
               >
+                <div className="flex items-center justify-between pb-2">
+                  <p className="text-sm font-semibold text-text-primary">
+                    Choose your city
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setLocationOpen(false)}
+                    className="rounded-md p-2 text-text-secondary hover:text-text-primary hover:bg-white/10 transition"
+                    aria-label="Close location selector"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
                 <div className="relative">
                   <Search
                     size={16}
@@ -1112,7 +1126,7 @@ const Navbar = () => {
 
       {open && (
         <div
-          className={`mx-auto mt-2 max-w-6xl rounded-2xl border p-3 backdrop-blur-md md:hidden ${mobilePanelClass}`}
+          className={`mx-auto mt-2 max-w-6xl rounded-2xl border p-3 backdrop-blur-md md:hidden max-h-[70vh] overflow-y-auto ${mobilePanelClass}`}
         >
           <div className="flex flex-col gap-1">
             <button
@@ -1250,9 +1264,22 @@ const Navbar = () => {
 
       {locationOpen && (
         <div
-          className={`mx-auto mt-2 max-w-6xl rounded-2xl border p-4 md:hidden ${locationPanelClass}`}
+          className={`mx-auto mt-2 max-w-6xl rounded-2xl border p-4 md:hidden max-h-[70vh] overflow-y-auto ${locationPanelClass}`}
           ref={mobileLocationRef}
         >
+          <div className="flex items-center justify-between pb-2">
+            <p className="text-sm font-semibold text-text-primary">
+              Choose your city
+            </p>
+            <button
+              type="button"
+              onClick={() => setLocationOpen(false)}
+              className="rounded-md p-2 text-text-secondary hover:text-text-primary hover:bg-white/10 transition"
+              aria-label="Close location selector"
+            >
+              <X size={16} />
+            </button>
+          </div>
           <div className="relative">
             <Search
               size={16}
