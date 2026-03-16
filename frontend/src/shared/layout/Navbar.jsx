@@ -573,6 +573,7 @@ const Navbar = () => {
   const profileRef = useRef(null);
   const notificationsRef = useRef(null);
   const locationRef = useRef(null);
+  const mobileLocationRef = useRef(null);
 
   const displayName = useMemo(() => {
     const fromUser = user?.fullname || user?.fullName || user?.name;
@@ -606,21 +607,21 @@ const Navbar = () => {
   }, [citySearch]);
 
   const shellClass = scrolled
-    ? "border-black/10 bg-white/95 shadow-[0_10px_28px_rgba(0,0,0,0.12)] backdrop-blur-lg"
-    : "border-black/10 bg-white/90 backdrop-blur-md";
+    ? "border-white/10 bg-black/95 shadow-[0_10px_28px_rgba(0,0,0,0.45)] backdrop-blur-lg"
+    : "border-white/10 bg-black/85 backdrop-blur-md";
 
-  const tabShellClass = "border-black/10 bg-black/[0.03]";
+  const tabShellClass = "border-white/10 bg-white/5";
 
   const subtleBtnClass =
-    "border-black/10 bg-black/[0.03] hover:border-black/20 hover:bg-black/[0.06]";
+    "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10";
 
-  const signInClass = "border-black/15 hover:bg-black/[0.05]";
+  const signInClass = "border-white/10 hover:bg-white/10";
 
-  const mobilePanelClass = "border-black/10 bg-white/95";
+  const mobilePanelClass = "border-white/10 bg-black/95 backdrop-blur-lg";
 
-  const profilePanelClass = "border-black/10 bg-white/95";
+  const profilePanelClass = "border-white/10 bg-black/95";
 
-  const locationPanelClass = "border-black/15 bg-white";
+  const locationPanelClass = "border-white/10 bg-black/95 shadow-2xl";
 
   const navInactiveClass = "nav-item text-text-secondary";
   const navActiveClass = "nav-item nav-item-active";
@@ -652,7 +653,12 @@ const Navbar = () => {
       ) {
         setNotificationsOpen(false);
       }
-      if (locationRef.current && !locationRef.current.contains(event.target)) {
+      const clickedInsideLocation =
+        (locationRef.current &&
+          locationRef.current.contains(event.target)) ||
+        (mobileLocationRef.current &&
+          mobileLocationRef.current.contains(event.target));
+      if (!clickedInsideLocation) {
         setLocationOpen(false);
       }
     };
@@ -1245,6 +1251,7 @@ const Navbar = () => {
       {locationOpen && (
         <div
           className={`mx-auto mt-2 max-w-6xl rounded-2xl border p-4 md:hidden ${locationPanelClass}`}
+          ref={mobileLocationRef}
         >
           <div className="relative">
             <Search
