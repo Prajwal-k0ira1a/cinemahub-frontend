@@ -69,6 +69,7 @@ const LocationPickerMap = ({ locationValue, onLocationSelect }) => {
   const [searchError, setSearchError] = useState("");
   const [mapCenter, setMapCenter] = useState(initialCoordinatePair || DEFAULT_CENTER);
   const [mapZoom, setMapZoom] = useState(initialCoordinatePair ? 15 : 12);
+  const [detecting, setDetecting] = useState(false);
 
   useEffect(() => {
     if (!locationValue?.trim()) {
@@ -121,6 +122,27 @@ const LocationPickerMap = ({ locationValue, onLocationSelect }) => {
     setMapCenter([lat, lng]);
     setMapZoom(16);
     resolveAddress(lat, lng);
+  };
+
+  const detectMyLocation = () => {
+    if (!navigator.geolocation) {
+      setSearchError("Geolocation not supported in this browser.");
+      return;
+    }
+    setDetecting(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setSearchError("");
+        handleMapPick(latitude, longitude);
+        setDetecting(false);
+      },
+      (err) => {
+        setSearchError(err.message || "Unable to detect location.");
+        setDetecting(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
   };
 
   const handleSearch = async (e) => {
@@ -205,6 +227,19 @@ const LocationPickerMap = ({ locationValue, onLocationSelect }) => {
           ))}
         </div>
       )}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={detectMyLocation}
+          disabled={detecting}
+          className="rounded-lg border border-white/15 bg-black/60 px-3 py-2 text-xs font-semibold text-white transition hover:bg-white/10 disabled:opacity-60"
+        >
+          {detecting ? "Detecting..." : "Use my location"}
+        </button>
+        {searchError ? (
+          <span className="text-xs text-rose-400">{searchError}</span>
+        ) : null}
+      </div>
       {searchError && <p className="text-xs text-amber-300">{searchError}</p>}
       <div className="h-72 w-full overflow-hidden rounded-xl border border-white/15 shadow-[0_10px_35px_rgba(0,0,0,0.35)] md:h-80">
         <MapContainer
