@@ -4,14 +4,14 @@ import axios from "axios";
 import { API_BASE_URL } from "../../../shared/config/api.js";
 
 const StatCard = ({ title, value, icon: Icon, color }) => (
-  <div className="rounded-xl bg-black border border-white/10 p-6">
+  <div className="rounded-xl bg-black border border-white/10 p-6 h-full min-w-[220px]">
     <div className="flex items-center justify-between">
       <div>
-        <p className="text-sm font-medium text-slate-400">{title}</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{title}</p>
         <p className="mt-2 text-3xl font-bold text-white">{value}</p>
       </div>
-      <div className={`rounded-lg p-3 ${color}`}>
-        <Icon size={24} className="text-white" />
+      <div className={`rounded-lg p-3 border border-white/10 bg-white/5 ${color}`}>
+        <Icon size={22} className="text-white" />
       </div>
     </div>
   </div>
@@ -53,6 +53,12 @@ const HallAdminDashboard = () => {
     }
   };
 
+  const statCards = [
+    { title: "Managed Halls", value: loading ? "..." : hallsCount, icon: Building2, color: "bg-emerald-500/20" },
+    { title: "Managed Movies", value: loading ? "..." : moviesCount, icon: Film, color: "bg-blue-500/20" },
+    { title: "Scheduled Shows", value: loading ? "..." : showtimesCount, icon: Clock3, color: "bg-amber-500/20" },
+  ];
+
   return (
     <div className="space-y-8">
       <div>
@@ -62,25 +68,12 @@ const HallAdminDashboard = () => {
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        <StatCard
-          title="Managed Halls"
-          value={loading ? "..." : hallsCount}
-          icon={Building2}
-          color="bg-emerald-500/20"
-        />
-        <StatCard
-          title="Managed Movies"
-          value={loading ? "..." : moviesCount}
-          icon={Film}
-          color="bg-blue-500/20"
-        />
-        <StatCard
-          title="Scheduled Shows"
-          value={loading ? "..." : showtimesCount}
-          icon={Clock3}
-          color="bg-amber-500/20"
-        />
+      <div className="flex flex-wrap gap-4">
+        {statCards.map((card) => (
+          <div key={card.title} className="flex-1 basis-56 min-w-[200px]">
+            <StatCard {...card} />
+          </div>
+        ))}
       </div>
     </div>
   );
