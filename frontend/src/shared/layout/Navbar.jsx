@@ -35,7 +35,7 @@ import dhankutaImg from "../../assets/location/Dhankuta.png";
 import damakImg from "../../assets/location/damak.png";
 import lumbiniImg from "../../assets/location/lumbini.png";
 import birgunjImg from "../../assets/location/birgunj.png";
-import logo from "../../assets/logo.png";
+import logo from "../../assets/logo.svg";
 const NAV_ITEMS = [
   { to: "/", label: "Home", end: true },
   { to: "/movies", label: "Movies" },
