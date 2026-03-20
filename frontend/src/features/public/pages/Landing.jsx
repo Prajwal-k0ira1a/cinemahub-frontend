@@ -1,5 +1,24 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link as RouterLink } from "react-router-dom";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  CardMedia,
+  Chip,
+  Container,
+  Divider,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { Star, ChevronDown, ArrowRight, Download } from "lucide-react";
 import Hero from "../../../shared/components/Hero.jsx";
 import heroPoster from "../../../assets/Batman.png";
@@ -151,7 +170,7 @@ const TESTIMONIALS = [
     name: "Arjun",
     role: "Cinephile",
     quote:
-      "Dark mode, curated lists, and summary cards keep me looped into the week’s best titles.",
+      "Dark mode, curated lists, and summary cards keep me looped into the week's best titles.",
     avatar:
       "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80",
   },
@@ -181,305 +200,561 @@ const APP_BADGES = [
   { label: "Google Play", detail: "Download for Android" },
 ];
 
+const sectionSurface = {
+  borderRadius: 8,
+  border: "1px solid rgba(255,255,255,0.08)",
+  background:
+    "linear-gradient(180deg, rgba(24,24,27,0.95) 0%, rgba(10,10,10,0.98) 100%)",
+  boxShadow: "0 24px 80px rgba(0,0,0,0.35)",
+};
+
+const cardSurface = {
+  height: "100%",
+  display: "flex",
+  flexDirection: "column",
+  borderRadius: 7,
+  border: "1px solid rgba(255,255,255,0.08)",
+  background:
+    "linear-gradient(180deg, rgba(28,28,30,0.98) 0%, rgba(16,16,18,0.98) 100%)",
+  color: "#fff",
+  boxShadow: "0 18px 50px rgba(0,0,0,0.28)",
+  transition: "transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease",
+  "&:hover": {
+    transform: "translateY(-6px)",
+    borderColor: "rgba(229,9,20,0.45)",
+    boxShadow: "0 24px 70px rgba(229,9,20,0.16)",
+  },
+};
+
 const SectionHeading = ({ eyebrow, title, description, actionLabel }) => (
-  <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-    <div>
+  <Stack
+    direction={{ xs: "column", md: "row" }}
+    justifyContent="space-between"
+    alignItems={{ xs: "flex-start", md: "flex-end" }}
+    spacing={2}
+    sx={{ mb: 4 }}
+  >
+    <Box>
       {eyebrow ? (
-        <p className="text-xs uppercase tracking-[0.4em] text-text-secondary">
+        <Typography
+          variant="overline"
+          sx={{
+            letterSpacing: "0.36em",
+            color: "rgba(255,255,255,0.62)",
+            display: "block",
+            mb: 0.5,
+          }}
+        >
           {eyebrow}
-        </p>
+        </Typography>
       ) : null}
-      <h2 className="text-2xl font-bold">{title}</h2>
+      <Typography variant="h4" sx={{ fontWeight: 800, color: "#fff" }}>
+        {title}
+      </Typography>
       {description ? (
-        <p className="text-sm text-text-secondary">{description}</p>
+        <Typography sx={{ mt: 1, maxWidth: 680, color: "rgba(255,255,255,0.68)" }}>
+          {description}
+        </Typography>
       ) : null}
-    </div>
+    </Box>
     {actionLabel ? (
-      <Link
+      <Button
+        component={RouterLink}
         to="/movies"
-        className="flex items-center gap-1 text-sm font-semibold text-accent hover:underline"
+        endIcon={<ArrowRight size={16} />}
+        sx={{
+          color: "#fff",
+          borderRadius: 999,
+          px: 2.5,
+          py: 1.1,
+          border: "1px solid rgba(229,9,20,0.5)",
+          backgroundColor: "rgba(229,9,20,0.14)",
+          textTransform: "none",
+          fontWeight: 700,
+          "&:hover": {
+            borderColor: "#e50914",
+            backgroundColor: "rgba(229,9,20,0.22)",
+          },
+        }}
       >
-        {actionLabel} <ArrowRight size={16} />
-      </Link>
+        {actionLabel}
+      </Button>
     ) : null}
-  </div>
+  </Stack>
 );
 
 const MovieCard = ({ image, title, genre, runtime, rating }) => (
-  <article className="group flex flex-col overflow-hidden rounded-[26px] border border-white/5 bg-secondary shadow-[0_20px_60px_rgba(0,0,0,0.45)] transition hover:border-accent/40">
-    <div
-      className="h-64 w-full bg-cover bg-center transition duration-500 group-hover:scale-105"
-      style={{ backgroundImage: `url('${image}')` }}
-      aria-label={`${title} poster`}
-    />
-    <div className="flex flex-1 flex-col gap-2 p-4">
-      <div className="flex items-center justify-between text-xs uppercase tracking-[0.2em] text-text-secondary">
-        <span>{genre}</span>
-        <span className="flex items-center gap-1 text-yellow-400">
-          <Star size={12} fill="currentColor" /> {rating}
-        </span>
-      </div>
-      <h3 className="text-lg font-semibold text-text-primary">{title}</h3>
+  <Card sx={cardSurface}>
+    <CardMedia component="img" image={image} alt={`${title} poster`} sx={{ height: 300 }} />
+    <CardContent sx={{ display: "flex", flexDirection: "column", gap: 1.5, flexGrow: 1 }}>
+      <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
+        <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.55)", letterSpacing: "0.22em", textTransform: "uppercase" }}>
+          {genre}
+        </Typography>
+        <Chip
+          icon={<Star size={14} fill="currentColor" />}
+          label={rating}
+          size="small"
+          sx={{
+            color: "#ffd54f",
+            borderColor: "rgba(255,213,79,0.3)",
+            backgroundColor: "rgba(255,213,79,0.08)",
+            "& .MuiChip-icon": { color: "#ffd54f" },
+          }}
+          variant="outlined"
+        />
+      </Stack>
+      <Typography variant="h6" sx={{ fontWeight: 800 }}>
+        {title}
+      </Typography>
       {runtime ? (
-        <p className="text-sm text-text-secondary">{runtime}</p>
+        <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.62)" }}>
+          {runtime}
+        </Typography>
       ) : null}
-      <div className="mt-auto flex items-center justify-between text-sm text-text-secondary">
-        <span className="rounded-full border border-white/10 px-3 py-1">
-          Book now
-        </span>
-        <span className="text-accent">Showtimes â†’</span>
-      </div>
-    </div>
-  </article>
-);
-
-const TestimonialCard = ({ quote, name, role, avatar }) => (
-  <article className="flex h-full flex-col gap-4 rounded-3xl border border-white/5 bg-secondary p-6 shadow-[0_16px_40px_rgba(0,0,0,0.6)]">
-    <div className="flex items-center gap-3">
-      <img
-        src={avatar}
-        alt={`${name} avatar`}
-        className="h-12 w-12 rounded-full object-cover"
-        loading="lazy"
+    </CardContent>
+    <CardActions sx={{ px: 2, pb: 2, pt: 0, justifyContent: "space-between" }}>
+      <Chip
+        label="Book now"
+        sx={{
+          borderRadius: 999,
+          color: "#fff",
+          backgroundColor: "rgba(255,255,255,0.08)",
+        }}
       />
-      <div>
-        <p className="font-semibold">{name}</p>
-        <p className="text-xs uppercase tracking-[0.4em] text-text-secondary">
-          {role}
-        </p>
-      </div>
-    </div>
-    <p className="text-base leading-relaxed text-text-secondary">“{quote}”</p>
-    <div className="flex items-center gap-1 text-yellow-400">
-      {[...Array(5)].map((_, idx) => (
-        <Star key={idx} size={14} fill="currentColor" />
-      ))}
-    </div>
-  </article>
+      <Button
+        component={RouterLink}
+        to="/movies"
+        size="small"
+        sx={{ color: "#ff6b74", textTransform: "none", fontWeight: 700 }}
+      >
+        Showtimes
+      </Button>
+    </CardActions>
+  </Card>
 );
 
 const ComingSoonCard = ({ title, image }) => (
-  <article className="group relative h-72 overflow-hidden rounded-3xl border border-white/5 bg-secondary shadow-[0_20px_60px_rgba(0,0,0,0.45)] transition hover:border-accent/50">
-    <div
-      className="absolute inset-0 bg-cover bg-center transition duration-500 group-hover:scale-105"
-      style={{ backgroundImage: `url('${image}')` }}
-      aria-label={`${title} preview`}
+  <Card sx={{ ...cardSurface, position: "relative", overflow: "hidden" }}>
+    <CardMedia component="img" image={image} alt={`${title} preview`} sx={{ height: 340 }} />
+    <Box
+      sx={{
+        position: "absolute",
+        inset: 0,
+        background: "linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.82) 100%)",
+      }}
     />
-    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-black/0" />
-    <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between text-sm text-white">
-      <div>
-        <p className="text-xs uppercase tracking-[0.4em] text-white/70">Coming soon</p>
-        <h3 className="text-lg font-semibold">{title}</h3>
-      </div>
-      <span className="rounded-full border border-white/30 px-3 py-1 text-xs">
-        Pre-register
-      </span>
-    </div>
-  </article>
+    <CardContent
+      sx={{
+        position: "absolute",
+        inset: "auto 0 0 0",
+        zIndex: 1,
+      }}
+    >
+      <Typography variant="overline" sx={{ color: "rgba(255,255,255,0.7)", letterSpacing: "0.32em" }}>
+        Coming Soon
+      </Typography>
+      <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }}>
+        {title}
+      </Typography>
+      <Chip
+        label="Pre-register"
+        sx={{
+          borderRadius: 999,
+          color: "#fff",
+          backgroundColor: "rgba(255,255,255,0.10)",
+          border: "1px solid rgba(255,255,255,0.18)",
+        }}
+      />
+    </CardContent>
+  </Card>
+);
+
+const TestimonialCard = ({ quote, name, role, avatar }) => (
+  <Paper sx={{ ...cardSurface, p: 3 }}>
+    <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+      <Avatar src={avatar} alt={name} sx={{ width: 52, height: 52 }} />
+      <Box>
+        <Typography sx={{ fontWeight: 700 }}>{name}</Typography>
+        <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.58)", letterSpacing: "0.24em", textTransform: "uppercase" }}>
+          {role}
+        </Typography>
+      </Box>
+    </Stack>
+    <Typography sx={{ color: "rgba(255,255,255,0.72)", lineHeight: 1.8, flexGrow: 1 }}>
+      "{quote}"
+    </Typography>
+    <Stack direction="row" spacing={0.5} sx={{ mt: 2 }}>
+      {[...Array(5)].map((_, idx) => (
+        <Star key={idx} size={16} fill="currentColor" color="#ffd54f" />
+      ))}
+    </Stack>
+  </Paper>
 );
 
 export default function Landing() {
   const [openFaq, setOpenFaq] = useState(0);
 
   return (
-    <div className="bg-primary text-text-primary">
+    <Box sx={{ backgroundColor: "#050505", color: "#fff" }}>
       <Hero />
-      <section className="border-b border-white/5 py-10">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="grid gap-6 md:grid-cols-3">
-            {HERO_STATS.map((stat) => (
-              <div
-                key={stat.label}
-                className="rounded-3xl border border-white/10 bg-black/60 px-6 py-5 text-left"
-              >
-                <p className="text-3xl font-bold">{stat.value}</p>
-                <p className="text-xs uppercase tracking-[0.4em] text-text-secondary">
-                  {stat.label}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      <section className="border-b border-white/5 py-16">
-        <div className="mx-auto max-w-6xl px-6">
+      <Container maxWidth="lg" sx={{ py: { xs: 6, md: 8 } }}>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" },
+            gap: 3,
+          }}
+        >
+          {HERO_STATS.map((stat) => (
+            <Paper key={stat.label} sx={{ ...sectionSurface, p: 3.5 }}>
+              <Typography variant="h3" sx={{ fontWeight: 900, color: "#fff" }}>
+                {stat.value}
+              </Typography>
+              <Typography
+                variant="overline"
+                sx={{ color: "rgba(255,255,255,0.6)", letterSpacing: "0.34em" }}
+              >
+                {stat.label}
+              </Typography>
+            </Paper>
+          ))}
+        </Box>
+      </Container>
+
+      <Container maxWidth="lg" sx={{ pb: { xs: 6, md: 8 } }}>
+        <Paper sx={{ ...sectionSurface, p: { xs: 3, md: 4 } }}>
           <SectionHeading
             eyebrow="Currently In Cinemas"
             title="Discover what's playing right now"
             description="Book seats for the hottest titles across Kathmandu, Pokhara, Lalitpur, and beyond."
             actionLabel="View all movies"
           />
-          <div className="grid gap-6 lg:grid-cols-3">
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                md: "repeat(2, minmax(0, 1fr))",
+                lg: "repeat(3, minmax(0, 1fr))",
+              },
+              gap: 3,
+            }}
+          >
             {CURRENTLY_IN_CINEMAS.map((movie) => (
               <MovieCard key={movie.title} {...movie} />
             ))}
-          </div>
-        </div>
-      </section>
+          </Box>
+        </Paper>
+      </Container>
 
-      <section className="border-b border-white/5 py-16">
-        <div className="mx-auto max-w-6xl px-6">
+      <Container maxWidth="lg" sx={{ pb: { xs: 6, md: 8 } }}>
+        <Paper sx={{ ...sectionSurface, p: { xs: 3, md: 4 } }}>
           <SectionHeading
             eyebrow="Top 10 Movies This Week"
             title="Get the critics' and audience favorites"
-            description="These titles are trending and selling out fast—grab a seat before it's gone."
+            description="These titles are trending and selling out fast. Grab a seat before it's gone."
             actionLabel="See showtimes"
           />
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                md: "repeat(2, minmax(0, 1fr))",
+                lg: "repeat(3, minmax(0, 1fr))",
+              },
+              gap: 3,
+            }}
+          >
             {TOP_MOVIES.map((movie) => (
               <MovieCard key={movie.title} {...movie} />
             ))}
-          </div>
-        </div>
-      </section>
+          </Box>
+        </Paper>
+      </Container>
 
-      <section className="border-b border-white/5 py-16">
-        <div className="mx-auto max-w-6xl px-6">
+      <Container maxWidth="lg" sx={{ pb: { xs: 6, md: 8 } }}>
+        <Paper sx={{ ...sectionSurface, p: { xs: 3, md: 4 } }}>
           <SectionHeading
             eyebrow="Coming Soon"
             title="Plan for the next releases"
             description="Get ready for premieres and reserve before tickets drop."
             actionLabel="Pre-register"
           />
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                md: "repeat(2, minmax(0, 1fr))",
+                lg: "repeat(3, minmax(0, 1fr))",
+              },
+              gap: 3,
+            }}
+          >
             {COMING_SOON.map((movie) => (
               <ComingSoonCard key={movie.title} {...movie} />
             ))}
-          </div>
-        </div>
-      </section>
+          </Box>
+        </Paper>
+      </Container>
 
-      <section className="border-b border-white/5 py-16">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="grid gap-8 rounded-[32px] border border-white/10 bg-gradient-to-br from-[#121212] to-[#050505] p-8 md:grid-cols-2">
-            <div className="space-y-4">
-              <p className="text-xs uppercase tracking-[0.4em] text-text-secondary">
+      <Container maxWidth="lg" sx={{ pb: { xs: 6, md: 8 } }}>
+        <Paper
+          sx={{
+            ...sectionSurface,
+            p: { xs: 3, md: 4 },
+            background:
+              "linear-gradient(135deg, rgba(31,31,34,0.98) 0%, rgba(10,10,10,0.98) 65%, rgba(78,13,17,0.92) 100%)",
+          }}
+        >
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", md: "1.1fr 0.9fr" },
+              gap: 4,
+              alignItems: "center",
+            }}
+          >
+            <Stack spacing={2.5}>
+              <Typography variant="overline" sx={{ color: "rgba(255,255,255,0.6)", letterSpacing: "0.36em" }}>
                 Exclusive Offer
-              </p>
-              <h3 className="text-3xl font-bold">Book tickets to your favorite movies online</h3>
-              <p className="text-sm text-text-secondary">
+              </Typography>
+              <Typography variant="h4" sx={{ fontWeight: 900 }}>
+                Book tickets to your favorite movies online
+              </Typography>
+              <Typography sx={{ color: "rgba(255,255,255,0.7)", maxWidth: 560, lineHeight: 1.8 }}>
                 Save time at the lobby, see seat availability, and access curated bundles created for the week.
-              </p>
-              <div className="flex flex-wrap gap-3">
-                <Link
+              </Typography>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                <Button
+                  component={RouterLink}
                   to="/movies"
-                  className="rounded-full bg-accent px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-accent/90"
+                  variant="contained"
+                  sx={{
+                    borderRadius: 999,
+                    px: 3,
+                    py: 1.4,
+                    fontWeight: 800,
+                    backgroundColor: "#e50914",
+                    textTransform: "none",
+                    "&:hover": { backgroundColor: "#c80811" },
+                  }}
                 >
                   Start booking
-                </Link>
-                <Link
+                </Button>
+                <Button
+                  component={RouterLink}
                   to="/locations"
-                  className="rounded-full border border-white/30 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white/80 transition hover:border-accent hover:text-white"
+                  variant="outlined"
+                  sx={{
+                    borderRadius: 999,
+                    px: 3,
+                    py: 1.4,
+                    fontWeight: 800,
+                    color: "#fff",
+                    borderColor: "rgba(255,255,255,0.32)",
+                    textTransform: "none",
+                    "&:hover": {
+                      borderColor: "#e50914",
+                      backgroundColor: "rgba(229,9,20,0.08)",
+                    },
+                  }}
                 >
                   Explore halls
-                </Link>
-              </div>
-            </div>
-            <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-black/40 p-6">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.45),_transparent_45%)]" />
-              <div className="relative z-10 flex flex-col items-center justify-center gap-6">
-                <div className="h-64 w-40 rounded-[38px] border border-white/20 bg-gradient-to-b from-[#0b0b0b] to-[#030303]" />
-                <p className="text-center text-sm text-text-secondary">
-                  Enjoy the Ticketor mobile experience with offline tickets, favorites, and push notifications.
-                </p>
-                <div className="flex w-full flex-wrap justify-center gap-3">
-                  {APP_BADGES.map((badge) => (
-                    <button
-                      key={badge.label}
-                      type="button"
-                      className="flex items-center gap-2 rounded-2xl border border-white/10 bg-black/40 px-4 py-2 text-xs font-semibold uppercase tracking-[0.4em] text-white transition hover:border-accent"
-                    >
-                      <Download size={16} />
-                      <span className="text-left">
-                        <strong className="block text-[11px]">{badge.label}</strong>
-                        <span className="text-[10px] text-text-secondary">{badge.detail}</span>
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+                </Button>
+              </Stack>
+            </Stack>
 
-      <section className="border-b border-white/5 py-16">
-        <div className="mx-auto max-w-6xl px-6">
+            <Paper
+              sx={{
+                borderRadius: 7,
+                border: "1px solid rgba(255,255,255,0.10)",
+                p: 3,
+                background:
+                  "radial-gradient(circle at top, rgba(255,255,255,0.18), rgba(255,255,255,0.04) 30%, rgba(0,0,0,0.2) 70%)",
+              }}
+            >
+              <Stack spacing={3} alignItems="center">
+                <Box
+                  sx={{
+                    width: 170,
+                    height: 320,
+                    borderRadius: 8,
+                    border: "1px solid rgba(255,255,255,0.16)",
+                    background:
+                      "linear-gradient(180deg, rgba(13,13,14,0.98) 0%, rgba(2,2,3,1) 100%)",
+                    boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.03), 0 20px 60px rgba(0,0,0,0.38)",
+                  }}
+                />
+                <Typography align="center" sx={{ color: "rgba(255,255,255,0.68)" }}>
+                  Enjoy the Ticketor mobile experience with offline tickets, favorites, and push notifications.
+                </Typography>
+                <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} sx={{ width: "100%" }}>
+                  {APP_BADGES.map((badge) => (
+                    <Button
+                      key={badge.label}
+                      fullWidth
+                      startIcon={<Download size={16} />}
+                      sx={{
+                        justifyContent: "flex-start",
+                        borderRadius: 4,
+                        p: 1.5,
+                        color: "#fff",
+                        border: "1px solid rgba(255,255,255,0.10)",
+                        backgroundColor: "rgba(0,0,0,0.28)",
+                        textTransform: "none",
+                        "&:hover": {
+                          borderColor: "rgba(229,9,20,0.45)",
+                          backgroundColor: "rgba(229,9,20,0.10)",
+                        },
+                      }}
+                    >
+                      <Box sx={{ textAlign: "left" }}>
+                        <Typography sx={{ fontSize: 13, fontWeight: 800 }}>{badge.label}</Typography>
+                        <Typography sx={{ fontSize: 11, color: "rgba(255,255,255,0.58)" }}>
+                          {badge.detail}
+                        </Typography>
+                      </Box>
+                    </Button>
+                  ))}
+                </Stack>
+              </Stack>
+            </Paper>
+          </Box>
+        </Paper>
+      </Container>
+
+      <Container maxWidth="lg" sx={{ pb: { xs: 6, md: 8 } }}>
+        <Paper sx={{ ...sectionSurface, p: { xs: 3, md: 4 } }}>
           <SectionHeading
             eyebrow="Happy Customers"
             title="Hear what movie lovers are saying"
             description="Verified reviews from people booking with Ticketor weekly."
           />
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "repeat(2, minmax(0, 1fr))",
+                lg: "repeat(4, minmax(0, 1fr))",
+              },
+              gap: 3,
+            }}
+          >
             {TESTIMONIALS.map((testimonial) => (
               <TestimonialCard key={testimonial.name} {...testimonial} />
             ))}
-          </div>
-        </div>
-      </section>
+          </Box>
+        </Paper>
+      </Container>
 
-      <section className="border-b border-white/5 py-16">
-        <div className="mx-auto max-w-6xl px-6">
-          <SectionHeading
-            eyebrow="Frequently Asked Questions"
-            title="Answers in seconds"
-          />
-          <div className="space-y-4">
-            {FAQS.map((item, index) => {
-              const isOpen = openFaq === index;
-              return (
-                <article
-                  key={item.q}
-                  className="overflow-hidden rounded-3xl border border-white/10 bg-secondary"
+      <Container maxWidth="lg" sx={{ pb: { xs: 6, md: 8 } }}>
+        <Paper sx={{ ...sectionSurface, p: { xs: 3, md: 4 } }}>
+          <SectionHeading eyebrow="Frequently Asked Questions" title="Answers in seconds" />
+          <Stack spacing={2}>
+            {FAQS.map((item, index) => (
+              <Accordion
+                key={item.q}
+                expanded={openFaq === index}
+                onChange={(_, expanded) => setOpenFaq(expanded ? index : -1)}
+                disableGutters
+                sx={{
+                  borderRadius: "24px !important",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  background:
+                    "linear-gradient(180deg, rgba(28,28,30,0.98) 0%, rgba(15,15,16,0.98) 100%)",
+                  color: "#fff",
+                  overflow: "hidden",
+                  "&:before": { display: "none" },
+                }}
+              >
+                <AccordionSummary
+                  expandIcon={<ChevronDown size={18} color="#ffffff" />}
+                  sx={{
+                    px: 3,
+                    py: 1,
+                    "& .MuiAccordionSummary-content": { my: 1.2 },
+                  }}
                 >
-                  <button
-                    type="button"
-                    onClick={() => setOpenFaq(isOpen ? -1 : index)}
-                    className="flex w-full items-center justify-between px-6 py-4 text-left text-sm font-semibold uppercase tracking-[0.3em] text-text-secondary"
-                  >
+                  <Typography sx={{ fontWeight: 700, letterSpacing: "0.04em" }}>
                     {item.q}
-                    <ChevronDown
-                      size={18}
-                      className={`transition-transform ${isOpen ? "rotate-180" : ""}`}
-                    />
-                  </button>
-                  {isOpen && (
-                    <p className="px-6 pb-6 text-base text-text-primary">
-                      {item.a}
-                    </p>
-                  )}
-                </article>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails sx={{ px: 3, pt: 0, pb: 3 }}>
+                  <Typography sx={{ color: "rgba(255,255,255,0.72)", lineHeight: 1.8 }}>
+                    {item.a}
+                  </Typography>
+                </AccordionDetails>
+              </Accordion>
+            ))}
+          </Stack>
+        </Paper>
+      </Container>
 
-      <section className="py-16">
-        <div className="mx-auto flex max-w-4xl flex-col items-center gap-4 px-6 text-center">
-          <p className="text-xs uppercase tracking-[0.6em] text-text-secondary">
+      <Container maxWidth="md" sx={{ pb: { xs: 7, md: 10 } }}>
+        <Paper
+          sx={{
+            ...sectionSurface,
+            p: { xs: 3, md: 5 },
+            textAlign: "center",
+            background:
+              "linear-gradient(180deg, rgba(24,24,27,0.98) 0%, rgba(9,9,10,0.98) 70%, rgba(58,11,14,0.96) 100%)",
+          }}
+        >
+          <Typography variant="overline" sx={{ color: "rgba(255,255,255,0.6)", letterSpacing: "0.42em" }}>
             Still have a question?
-          </p>
-          <h2 className="text-3xl font-black">Ready to watch & book movies?</h2>
-          <p className="text-sm text-text-secondary">
+          </Typography>
+          <Typography variant="h4" sx={{ mt: 1, fontWeight: 900 }}>
+            Ready to watch and book movies?
+          </Typography>
+          <Typography sx={{ mt: 1.5, color: "rgba(255,255,255,0.68)" }}>
             Subscribe for early seat drops, reminder texts, and exclusive invites.
-          </p>
-          <div className="flex w-full flex-col gap-3 sm:flex-row">
-            <input
-              type="email"
+          </Typography>
+          <Divider sx={{ my: 3, borderColor: "rgba(255,255,255,0.08)" }} />
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+            <TextField
+              fullWidth
               placeholder="Enter your email"
-              className="flex-1 rounded-2xl border border-white/20 bg-transparent px-4 py-3 text-sm focus:border-accent focus:outline-none"
+              variant="outlined"
+              InputProps={{
+                sx: {
+                  borderRadius: 4,
+                  color: "#fff",
+                  backgroundColor: "rgba(255,255,255,0.04)",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.18)",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.3)",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#e50914",
+                  },
+                },
+              }}
             />
-            <button
-              type="button"
-              className="rounded-2xl bg-accent px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-accent/90"
+            <Button
+              variant="contained"
+              sx={{
+                borderRadius: 4,
+                minWidth: { sm: 170 },
+                px: 3.5,
+                py: 1.7,
+                backgroundColor: "#e50914",
+                fontWeight: 800,
+                textTransform: "none",
+                "&:hover": { backgroundColor: "#c80811" },
+              }}
             >
               Sign up
-            </button>
-          </div>
-        </div>
-      </section>
-    </div>
+            </Button>
+          </Stack>
+        </Paper>
+      </Container>
+    </Box>
   );
 }

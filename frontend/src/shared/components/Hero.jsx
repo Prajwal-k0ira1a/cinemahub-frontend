@@ -1,140 +1,40 @@
 import React, { useState, useEffect } from "react";
 import { Play, TvMinimalPlay, Clock, Calendar, Star } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
-import img1 from "../../assets/interstellar.jpg";
-import img2 from "../../assets/Oppenheimer.jpg";
-import img3 from "../../assets/Dune.jpg";
-import img4 from "../../assets/avatar.png";
-import img5 from "../../assets/purnaBahadur.png";
-import img6 from "../../assets/RoadToNinja.png";
-import img7 from "../../assets/Batman.png";
-import img8 from "../../assets/unkoSweater.png";
+import axios from "axios";
+import { API_BASE_URL, API_SERVER_URL } from "../config/api.js";
 
 import "../../index.css";
 
-const HERO_SLIDES = [
-  {
-    id: 1,
-    movie_title: "INTERSTELLAR ODYSSEY",
-    moviePoster: img1,
-    rating: "PG-13",
-    releaseDate: "2024-01-01",
-    duration: 165, // 2h 45m in minutes
-    genre: ["Sci-Fi", "Adventure"],
-    match: "98% Match",
-    description:
-      "Embark on a journey beyond the stars. When humanity's time on Earth comes to an end, a team of explorers undertakes the most important mission in human history.",
-    isPlaying: true,
-    playEndDate: "2024-12-31",
-    movieTrailer: "https://example.com/interstellar-trailer",
-  },
-  {
-    id: 2,
-    movie_title: "DUNE: PART TWO",
-    moviePoster: img3,
-    rating: "PG-13",
-    releaseDate: "2024-03-01",
-    duration: 166, // 2h 46m in minutes
-    genre: ["Sci-Fi", "Action"],
-    match: "95% Match",
-    description:
-      "Paul Atreides unites with Chani and the Fremen while on a warpath of revenge against the conspirators who destroyed his family.",
-    isPlaying: true,
-    playEndDate: "2024-12-31",
-    movieTrailer: "https://example.com/dune-trailer",
-  },
-  {
-    id: 3,
-    movie_title: "OPPENHEIMER",
-    moviePoster: img2,
-    rating: "PG-13",
-    releaseDate: "2023-07-21",
-    duration: 180, // 3h 00m in minutes
-    genre: ["Biography", "Drama"],
-    match: "96% Match",
-    description:
-      "The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb.",
-    isPlaying: true,
-    playEndDate: "2024-12-31",
-    movieTrailer: "https://example.com/oppenheimer-trailer",
-  },
-  {
-    id: 4,
-    movie_title: "AVATAR: THE WAY OF WATER",
-    moviePoster: img4,
-    rating: "PG-13",
-    releaseDate: "2022-12-16",
-    duration: 192, // 3h 12m in minutes
-    genre: ["Sci-Fi", "Fantasy"],
-    match: "94% Match",
-    description:
-      "Jake Sully and Neytiri must protect their family as Pandora faces new threats from human invaders.",
-    isPlaying: true,
-    playEndDate: "2024-12-31",
-    movieTrailer: "https://example.com/avatar-trailer",
-  },
-  {
-    id: 5,
-    movie_title: "Purna Bahadur ko Sarangi",
-    moviePoster: img5,
-    rating: "PG",
-    releaseDate: "2023-01-01",
-    duration: 130, // 2h 10m in minutes
-    genre: ["Drama", "Musical"],
-    match: "92% Match",
-    description:
-      "A heartfelt Nepali story of Purna Bahadur, whose life and struggles are intertwined with the soulful sound of his sarangi.",
-    isPlaying: true,
-    playEndDate: "2024-12-31",
-    movieTrailer: "https://example.com/purna-trailer",
-  },
-  {
-    id: 6,
-    movie_title: "Naruto: Road to Ninja",
-    moviePoster: img6,
-    rating: "PG-13",
-    releaseDate: "2012-07-28",
-    duration: 110, // 1h 50m in minutes
-    genre: ["Anime", "Action"],
-    match: "95% Match",
-    description:
-      "Naruto and Sakura are transported to an alternate reality where they must confront powerful enemies and their own inner struggles.",
-    isPlaying: true,
-    playEndDate: "2024-12-31",
-    movieTrailer: "https://example.com/naruto-trailer",
-  },
-  {
-    id: 7,
-    movie_title: "Batman",
-    moviePoster: img7,
-    rating: "PG-13",
-    releaseDate: "1989-06-23",
-    duration: 126, // 2h 6m in minutes
-    genre: ["Action", "Crime"],
-    match: "93% Match",
-    description:
-      "The Dark Knight faces off against the Joker in Tim Burton's iconic reimagining of Gotham City.",
-    isPlaying: true,
-    playEndDate: "2024-12-31",
-    movieTrailer: "https://example.com/batman-trailer",
-  },
-  {
-    id: 8,
-    movie_title: "Unko Sweater",
-    moviePoster: img8,
-    rating: "PG",
-    releaseDate: "2024-01-01",
-    duration: 105, // 1h 45m in minutes
-    genre: ["Romance", "Drama"],
-    match: "90% Match",
-    description:
-      "A tender Nepali tale of love, memory, and the warmth of a sweater that carries the past into the present.",
-    isPlaying: true,
-    playEndDate: "2024-12-31",
-    movieTrailer: "https://example.com/unko-trailer",
-  },
-];
+const FALLBACK_POSTER =
+  "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1000&auto=format&fit=crop";
+
+const getMoviePosterUrl = (poster) => {
+  if (!poster || String(poster).startsWith("undefined-")) return FALLBACK_POSTER;
+  if (/^https?:\/\//i.test(poster)) return poster;
+  return `${API_SERVER_URL}/uploads/${poster}`;
+};
+
+const normalizeHeroMovies = (movies) =>
+  movies
+    .filter((movie) => movie?.isPlaying !== false)
+    .map((movie) => ({
+      ...movie,
+      movie_title: movie.movie_title || movie.title || "Untitled Movie",
+      moviePoster: getMoviePosterUrl(movie.moviePoster),
+      description: movie.description || "No description available yet.",
+      duration: Number(movie.duration) || 0,
+      genre:
+        Array.isArray(movie.genre) && movie.genre.length > 0
+          ? movie.genre
+          : typeof movie.genre === "string" && movie.genre.trim()
+            ? movie.genre
+                .split(",")
+                .map((item) => item.trim())
+                .filter(Boolean)
+            : ["Movie"],
+      releaseDate: movie.releaseDate || new Date().toISOString(),
+    }));
 
 // ==================== ANIMATION VARIANTS ====================
 const fadeInUp = {
@@ -321,19 +221,50 @@ const ThumbnailCard = ({ movie, index, activeIndex, onClick }) => {
 // ==================== MAIN COMPONENT ====================
 
 const Hero = () => {
+  const [movies, setMovies] = useState([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [autoPlay, setAutoPlay] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const activeMovie = HERO_SLIDES[activeIndex];
+  useEffect(() => {
+    const fetchMovies = async () => {
+      try {
+        const response = await axios.get(`${API_BASE_URL}/movie/get`, {
+          withCredentials: true,
+        });
+
+        if (response.data?.success && Array.isArray(response.data.data)) {
+          setMovies(normalizeHeroMovies(response.data.data));
+        } else {
+          setMovies([]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch hero movies", error);
+        setMovies([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMovies();
+  }, []);
+
+  useEffect(() => {
+    if (activeIndex >= movies.length && movies.length > 0) {
+      setActiveIndex(0);
+    }
+  }, [activeIndex, movies.length]);
+
+  const activeMovie = movies[activeIndex];
 
   // Auto-advance slides
   useEffect(() => {
-    if (!autoPlay) return;
+    if (!autoPlay || movies.length <= 1) return;
     const timer = setTimeout(() => {
-      setActiveIndex((prev) => (prev + 1) % HERO_SLIDES.length);
+      setActiveIndex((prev) => (prev + 1) % movies.length);
     }, 8000);
     return () => clearTimeout(timer);
-  }, [activeIndex, autoPlay]);
+  }, [activeIndex, autoPlay, movies.length]);
 
   // Handle thumbnail click
   const handleThumbnailClick = (index) => {
@@ -341,6 +272,30 @@ const Hero = () => {
     setAutoPlay(false);
     setTimeout(() => setAutoPlay(true), 5000);
   };
+
+  if (loading) {
+    return (
+      <div className="relative">
+        <section className="relative flex min-h-[70vh] w-full items-center justify-center overflow-hidden bg-primary text-white sm:min-h-[80vh] md:min-h-screen">
+          <p className="text-sm uppercase tracking-[0.4em] text-text-secondary">
+            Loading movies...
+          </p>
+        </section>
+      </div>
+    );
+  }
+
+  if (!activeMovie) {
+    return (
+      <div className="relative">
+        <section className="relative flex min-h-[70vh] w-full items-center justify-center overflow-hidden bg-primary text-white sm:min-h-[80vh] md:min-h-screen">
+          <p className="text-sm uppercase tracking-[0.4em] text-text-secondary">
+            No movies available right now.
+          </p>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="relative ">
@@ -434,7 +389,9 @@ const Hero = () => {
                 </span>
                 <span className="inline-flex items-center gap-2 text-sm text-white font-semibold bg-white/10 backdrop-blur px-3 py-1.5 rounded-full border border-white/20">
                   <Star size={14} className="text-amber-400" fill="currentColor" />
-                  {(activeMovie.duration / 20).toFixed(1)}
+                  {activeMovie.duration > 0
+                    ? (activeMovie.duration / 20).toFixed(1)
+                    : "N/A"}
                 </span>
                
               </motion.div>
@@ -523,7 +480,15 @@ const Hero = () => {
             className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide px-6 lg:px-20"
             role="list"
           >
-       
+            {movies.map((movie, index) => (
+              <ThumbnailCard
+                key={movie.id || `${movie.movie_title}-${index}`}
+                movie={movie}
+                index={index}
+                activeIndex={activeIndex}
+                onClick={() => handleThumbnailClick(index)}
+              />
+            ))}
           </div>
         </div>
       </section>
