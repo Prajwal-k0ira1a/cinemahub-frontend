@@ -283,56 +283,136 @@ const SectionHeading = ({ eyebrow, title, description, actionLabel }) => (
   </Stack>
 );
 
-const MovieCard = ({ image, title, genre, runtime, rating }) => (
-  <Card sx={cardSurface}>
-    <CardMedia component="img" image={image} alt={`${title} poster`} sx={{ height: 300 }} />
-    <CardContent sx={{ display: "flex", flexDirection: "column", gap: 1.5, flexGrow: 1 }}>
-      <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
-        <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.55)", letterSpacing: "0.22em", textTransform: "uppercase" }}>
-          {genre}
-        </Typography>
-        <Chip
-          icon={<Star size={14} fill="currentColor" />}
-          label={rating}
-          size="small"
-          sx={{
-            color: "#ffd54f",
-            borderColor: "rgba(255,213,79,0.3)",
-            backgroundColor: "rgba(255,213,79,0.08)",
-            "& .MuiChip-icon": { color: "#ffd54f" },
-          }}
-          variant="outlined"
-        />
-      </Stack>
-      <Typography variant="h6" sx={{ fontWeight: 800 }}>
-        {title}
-      </Typography>
-      {runtime ? (
-        <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.62)" }}>
-          {runtime}
-        </Typography>
-      ) : null}
-    </CardContent>
-    <CardActions sx={{ px: 2, pb: 2, pt: 0, justifyContent: "space-between" }}>
-      <Chip
-        label="Book now"
+function MovieCard({ image, title, genre, runtime, rating }) {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <Card
+      sx={{
+        ...cardSurface,
+        maxWidth: 345,
+        minHeight: 350,
+        position: "relative",
+        overflow: "hidden",
+        transition: "transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease",
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      role="region"
+      aria-label={`${title} movie card`}
+    >
+      <CardMedia
+        component="img"
+        alt={`${title} poster`}
+        image={image}
         sx={{
-          borderRadius: 999,
-          color: "#fff",
-          backgroundColor: "rgba(255,255,255,0.08)",
+          height: "100%",
+          minHeight: 350,
+          objectFit: "cover",
         }}
       />
-      <Button
-        component={RouterLink}
-        to="/movies"
-        size="small"
-        sx={{ color: "#ff6b74", textTransform: "none", fontWeight: 700 }}
+
+      <Box
+        sx={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.86) 58%, rgba(0,0,0,0.94) 100%)",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "flex-end",
+          p: 1,
+          opacity: isHovered ? 1 : 0,
+          visibility: isHovered ? "visible" : "hidden",
+          transition: "opacity 0.3s ease-in-out, visibility 0.3s ease-in-out",
+          pointerEvents: isHovered ? "auto" : "none",
+        }}
       >
-        Showtimes
-      </Button>
-    </CardActions>
-  </Card>
-);
+        <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end", pb: 1 }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1.5} sx={{ mb: 1.25 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                color: "rgba(255,255,255,0.72)",
+                letterSpacing: "0.2em",
+                textTransform: "uppercase",
+              }}
+            >
+              {genre}
+            </Typography>
+            {rating ? (
+              <Chip
+                icon={<Star size={14} fill="currentColor" />}
+                label={rating}
+                size="small"
+                sx={{
+                  color: "#ffd54f",
+                  borderColor: "rgba(255,213,79,0.3)",
+                  backgroundColor: "rgba(255,213,79,0.08)",
+                  "& .MuiChip-icon": { color: "#ffd54f" },
+                }}
+                variant="outlined"
+              />
+            ) : null}
+          </Stack>
+
+          <Typography gutterBottom variant="h5" component="div" sx={{ color: "#fff", fontWeight: 800 }}>
+            {title}
+          </Typography>
+
+          <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.72)", lineHeight: 1.7 }}>
+            {runtime ? `${genre}${genre ? " | " : ""}${runtime}` : genre}
+          </Typography>
+        </CardContent>
+
+        <CardActions
+          sx={{
+            justifyContent: "space-around",
+            px: 2,
+            pb: 2,
+            pt: 0.5,
+          }}
+        >
+          <Button
+            component={RouterLink}
+            to="/movies"
+            size="small"
+            variant="contained"
+            sx={{
+              borderRadius: 999,
+              backgroundColor: "#e50914",
+              color: "#fff",
+              textTransform: "none",
+              fontWeight: 700,
+              "&:hover": { backgroundColor: "#c80811" },
+            }}
+          >
+            Buy Tickets
+          </Button>
+          <Button
+            component={RouterLink}
+            to="/movies"
+            size="small"
+            variant="outlined"
+            sx={{
+              borderRadius: 999,
+              color: "#fff",
+              borderColor: "rgba(255,255,255,0.72)",
+              textTransform: "none",
+              fontWeight: 700,
+              "&:hover": {
+                borderColor: "#fff",
+                backgroundColor: "rgba(255,255,255,0.08)",
+              },
+            }}
+          >
+            Watch Trailer
+          </Button>
+        </CardActions>
+      </Box>
+    </Card>
+  );
+}
 
 const ComingSoonCard = ({ title, image }) => (
   <Card sx={{ ...cardSurface, position: "relative", overflow: "hidden" }}>

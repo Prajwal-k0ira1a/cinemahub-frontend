@@ -3,6 +3,8 @@ import {
   Alert,
   Box,
   Button,
+  Card,
+  CardContent,
   Chip,
   Container,
   Dialog,
@@ -10,15 +12,14 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
-  FormControl,
   Grid,
   IconButton,
   InputAdornment,
-  InputLabel,
   LinearProgress,
-  MenuItem,
   Paper,
-  Select,
+  Step,
+  StepLabel,
+  Stepper,
   Stack,
   Table,
   TableBody,
@@ -30,7 +31,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { Plus, Search, Edit2, Trash2, Upload, Film, X } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, Upload, Film, X, ImagePlus, Video, UserRound } from "lucide-react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { API_BASE_URL, API_SERVER_URL } from "../../../shared/config/api";
@@ -53,6 +54,15 @@ const toCastRows = (movie) => {
 };
 
 const createEmptyCastRow = () => ({ name: "", imageFile: null, existingImage: null });
+
+const getMediaUrl = (file) => (file ? URL.createObjectURL(file) : "");
+
+const getServerAssetUrl = (fileName) => {
+  if (!fileName) return "";
+  if (/^https?:\/\//i.test(fileName)) return fileName;
+  const normalized = String(fileName).replace(/^\/+/, "").replace(/^uploads\//, "");
+  return `${API_SERVER_URL}/uploads/${normalized}`;
+};
 
 const Movies = () => {
   const [movies, setMovies] = useState([]);
@@ -100,6 +110,10 @@ const Movies = () => {
   const handleFileChange = (e) => {
     const { name, files } = e.target;
     if (files && files[0]) setFormData((prev) => ({ ...prev, [name]: files[0] }));
+  };
+
+  const handleRemoveFile = (name) => {
+    setFormData((prev) => ({ ...prev, [name]: null }));
   };
 
   const handleCastNameChange = (index, value) => {
@@ -158,20 +172,34 @@ const Movies = () => {
     if (!formData.genre.trim()) return toast.error("Genre is required");
     if (!String(formData.duration).trim()) return toast.error("Duration is required");
     if (!formData.description.trim()) return toast.error("Description is required");
+    return true;
+  };
+
+  const validateStepTwo = () => {
     if (!editingMovie && !formData.moviePoster) return toast.error("Poster is required");
     if (!editingMovie && !formData.movieTrailer) return toast.error("Trailer is required");
     return true;
   };
 
   const handleNextStep = () => {
-    if (!validateStepOne()) return;
-    setCurrentStep(2);
+    if (currentStep === 1) {
+      if (!validateStepOne()) return;
+      setCurrentStep(2);
+      return;
+    }
+
+    if (currentStep === 2) {
+      if (!validateStepTwo()) return;
+      setCurrentStep(3);
+    }
   };
 
-  const handleBackStep = () => setCurrentStep(1);
+  const handleBackStep = () => {
+    setCurrentStep((prev) => Math.max(1, prev - 1));
+  };
 
   const handleSaveMovie = async () => {
-    if (currentStep !== 2) return;
+    if (currentStep !== 3) return;
     setSubmitting(true);
     setError("");
 
@@ -257,6 +285,18 @@ const Movies = () => {
     });
     setShowModal(true);
   };
+
+  const posterPreview = formData.moviePoster
+    ? getMediaUrl(formData.moviePoster)
+    : editingMovie?.moviePoster
+      ? getServerAssetUrl(editingMovie.moviePoster)
+      : "";
+
+  const trailerPreview = formData.movieTrailer
+    ? getMediaUrl(formData.movieTrailer)
+    : editingMovie?.movieTrailer
+      ? getServerAssetUrl(editingMovie.movieTrailer)
+      : "";
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -352,7 +392,7 @@ const Movies = () => {
                         >
                           {movie.moviePoster ? (
                             <img
-                              src={`${API_SERVER_URL}/uploads/${movie.moviePoster}`}
+                              src={getServerAssetUrl(movie.moviePoster)}
                               alt={movie.movie_title}
                               style={{ width: "100%", height: "100%", objectFit: "cover" }}
                             />
@@ -442,7 +482,7 @@ const Movies = () => {
               {editingMovie ? "Edit Movie" : "Add New Movie"}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Step {currentStep} of 2
+              Step {currentStep} of 3
             </Typography>
           </Box>
           <IconButton onClick={() => setShowModal(false)}>
@@ -456,88 +496,122 @@ const Movies = () => {
           </Alert>
         )}
         <DialogContent dividers>
-          <Stack direction="row" spacing={1} sx={{ mb: 3 }}>
-            <Chip label="1. Movie Details" color={currentStep === 1 ? "primary" : "default"} />
-            <Chip label="2. Team & Cast" color={currentStep === 2 ? "primary" : "default"} />
-          </Stack>
+          <Stepper activeStep={currentStep - 1} alternativeLabel sx={{ mb: 4 }}>
+            <Step>
+              <StepLabel>Movie Details</StepLabel>
+            </Step>
+            <Step>
+              <StepLabel>Media Uploads</StepLabel>
+            </Step>
+            <Step>
+              <StepLabel>Team & Cast</StepLabel>
+            </Step>
+          </Stepper>
 
           {currentStep === 1 && (
             <Grid container spacing={2}>
               <Grid item xs={12} md={6}>
-                <TextField
-                  label="Movie Title"
-                  name="movie_title"
-                  fullWidth
-                  value={formData.movie_title}
-                  onChange={handleInputChange}
-                  required
-                />
+                <Stack spacing={2} sx={{ height: "100%" }}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Stack spacing={2.5}>
+                        <Box>
+                          <Typography variant="subtitle1" fontWeight={700}>
+                            Primary Details
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Add the core movie information used in listings and search.
+                          </Typography>
+                        </Box>
+                        <Grid container spacing={2}>
+                          <Grid item xs={12}>
+                            <TextField
+                              label="Movie Title"
+                              name="movie_title"
+                              fullWidth
+                              value={formData.movie_title}
+                              onChange={handleInputChange}
+                              required
+                            />
+                          </Grid>
+                          <Grid item xs={12} sm={7}>
+                            <TextField
+                              label="Genre"
+                              name="genre"
+                              fullWidth
+                              placeholder="Action, Thriller"
+                              helperText="Separate multiple genres with commas."
+                              value={formData.genre}
+                              onChange={handleInputChange}
+                            />
+                          </Grid>
+                          <Grid item xs={12} sm={5}>
+                            <TextField
+                              label="Duration (mins)"
+                              name="duration"
+                              fullWidth
+                              type="number"
+                              value={formData.duration}
+                              onChange={handleInputChange}
+                            />
+                          </Grid>
+                        </Grid>
+                      </Stack>
+                    </CardContent>
+                  </Card>
+
+                  <Card variant="outlined" sx={{ flexGrow: 1 }}>
+                    <CardContent sx={{ height: "100%" }}>
+                      <Stack spacing={2.5} sx={{ height: "100%" }}>
+                        <Box>
+                          <Typography variant="subtitle1" fontWeight={700}>
+                            Synopsis
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Write the short description that users will see on the movie page.
+                          </Typography>
+                        </Box>
+                        <TextField
+                          label="Description"
+                          name="description"
+                          fullWidth
+                          multiline
+                          minRows={10}
+                          value={formData.description}
+                          onChange={handleInputChange}
+                          placeholder="Write a compelling movie summary..."
+                        />
+                      </Stack>
+                    </CardContent>
+                  </Card>
+                </Stack>
               </Grid>
               <Grid item xs={12} md={6}>
-                <TextField
-                  label="Genre"
-                  name="genre"
-                  fullWidth
-                  placeholder="Action, Thriller"
-                  helperText="Separate multiple genres with commas."
-                  value={formData.genre}
-                  onChange={handleInputChange}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  label="Duration (mins)"
-                  name="duration"
-                  fullWidth
-                  type="number"
-                  value={formData.duration}
-                  onChange={handleInputChange}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  label="Description"
-                  name="description"
-                  fullWidth
-                  multiline
-                  minRows={2}
-                  value={formData.description}
-                  onChange={handleInputChange}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <Button
-                  variant="outlined"
-                  component="label"
-                  startIcon={<Upload size={18} />}
-                  fullWidth
-                >
-                  {formData.moviePoster ? formData.moviePoster.name : "Upload Poster Image"}
-                  <input
-                    type="file"
-                    name="moviePoster"
-                    accept="image/*"
-                    hidden
-                    onChange={handleFileChange}
-                  />
-                </Button>
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <Button
-                  variant="outlined"
-                  component="label"
-                  startIcon={<Upload size={18} />}
-                  fullWidth
-                >
-                  {formData.movieTrailer ? formData.movieTrailer.name : "Upload Trailer Video"}
-                  <input
-                    type="file"
-                    name="movieTrailer"
-                    accept="video/*"
-                    hidden
-                    onChange={handleFileChange}
-                  />
-                </Button>
+                <Stack spacing={2}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                        <Chip
+                          label={formData.movie_title.trim() || "Untitled movie"}
+                          color="primary"
+                          variant="outlined"
+                        />
+                        <Chip
+                          label={
+                            String(formData.duration).trim()
+                              ? `${formData.duration} mins`
+                              : "Duration pending"
+                          }
+                          variant="outlined"
+                        />
+                        <Chip
+                          label={formData.genre.trim() || "Genre pending"}
+                          variant="outlined"
+                        />
+                      </Stack>
+                    </CardContent>
+                  </Card>
+                </Stack>
               </Grid>
             </Grid>
           )}
@@ -545,75 +619,391 @@ const Movies = () => {
           {currentStep === 2 && (
             <Grid container spacing={2}>
               <Grid item xs={12} md={6}>
-                <TextField
-                  label="Director"
-                  name="director"
-                  fullWidth
-                  value={formData.director}
-                  onChange={handleInputChange}
-                />
+                <Card variant="outlined">
+                  <CardContent>
+                    <Stack spacing={2}>
+                      <Stack direction="row" spacing={1.5} alignItems="center">
+                        <ImagePlus size={18} />
+                        <Box>
+                          <Typography variant="subtitle1" fontWeight={700}>
+                            Poster Upload
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Upload the artwork that appears in cards, tables, and movie details.
+                          </Typography>
+                        </Box>
+                      </Stack>
+                      <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+                        <Button
+                          variant="outlined"
+                          component="label"
+                          startIcon={<Upload size={18} />}
+                          fullWidth
+                          sx={{ minHeight: 52, justifyContent: "flex-start" }}
+                        >
+                          {formData.moviePoster
+                            ? formData.moviePoster.name
+                            : editingMovie?.moviePoster
+                              ? "Replace poster image"
+                              : "Upload poster image"}
+                          <input
+                            type="file"
+                            name="moviePoster"
+                            accept="image/*"
+                            hidden
+                            onChange={handleFileChange}
+                          />
+                        </Button>
+                        {(formData.moviePoster || editingMovie?.moviePoster) && (
+                          <Button
+                            variant="outlined"
+                            color="error"
+                            startIcon={<X size={16} />}
+                            onClick={() => handleRemoveFile("moviePoster")}
+                            sx={{ minHeight: 52, minWidth: { sm: 140 } }}
+                          >
+                            Remove
+                          </Button>
+                        )}
+                      </Stack>
+                      {posterPreview ? (
+                        <Box
+                          component="img"
+                          src={posterPreview}
+                          alt="Poster preview"
+                          sx={{
+                            width: "100%",
+                            height: 320,
+                            objectFit: "cover",
+                            borderRadius: 2,
+                            border: "1px solid",
+                            borderColor: "divider",
+                          }}
+                        />
+                      ) : (
+                        <Paper
+                          variant="outlined"
+                          sx={{
+                            height: 320,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            borderStyle: "dashed",
+                            bgcolor: "background.default",
+                          }}
+                        >
+                          <Typography variant="body2" color="text.secondary">
+                            No poster selected
+                          </Typography>
+                        </Paper>
+                      )}
+                    </Stack>
+                  </CardContent>
+                </Card>
               </Grid>
               <Grid item xs={12} md={6}>
-                <TextField
-                  label="Writer"
-                  name="writer"
-                  fullWidth
-                  value={formData.writer}
-                  onChange={handleInputChange}
-                />
+                <Card variant="outlined" sx={{ height: "100%" }}>
+                  <CardContent>
+                    <Stack spacing={2}>
+                      <Stack direction="row" spacing={1.5} alignItems="center">
+                        <Video size={18} />
+                        <Box>
+                          <Typography variant="subtitle1" fontWeight={700}>
+                            Trailer Upload
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Upload a preview video users can watch before booking.
+                          </Typography>
+                        </Box>
+                      </Stack>
+                      <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+                        <Button
+                          variant="outlined"
+                          component="label"
+                          startIcon={<Upload size={18} />}
+                          fullWidth
+                          sx={{ minHeight: 52, justifyContent: "flex-start" }}
+                        >
+                          {formData.movieTrailer
+                            ? formData.movieTrailer.name
+                            : editingMovie?.movieTrailer
+                              ? "Replace trailer video"
+                              : "Upload trailer video"}
+                          <input
+                            type="file"
+                            name="movieTrailer"
+                            accept="video/*"
+                            hidden
+                            onChange={handleFileChange}
+                          />
+                        </Button>
+                        {(formData.movieTrailer || editingMovie?.movieTrailer) && (
+                          <Button
+                            variant="outlined"
+                            color="error"
+                            startIcon={<X size={16} />}
+                            onClick={() => handleRemoveFile("movieTrailer")}
+                            sx={{ minHeight: 52, minWidth: { sm: 140 } }}
+                          >
+                            Remove
+                          </Button>
+                        )}
+                      </Stack>
+                      {trailerPreview ? (
+                        <Box
+                          component="video"
+                          controls
+                          src={trailerPreview}
+                          sx={{
+                            width: "100%",
+                            borderRadius: 2,
+                            border: "1px solid",
+                            borderColor: "divider",
+                            bgcolor: "common.black",
+                          }}
+                        />
+                      ) : (
+                        <Paper
+                          variant="outlined"
+                          sx={{
+                            minHeight: 180,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            borderStyle: "dashed",
+                            bgcolor: "background.default",
+                            px: 2,
+                          }}
+                        >
+                          <Typography variant="body2" color="text.secondary" align="center">
+                            No trailer selected
+                          </Typography>
+                        </Paper>
+                      )}
+                    </Stack>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+          )}
+
+          {currentStep === 3 && (
+            <Grid container spacing={3}>
+              <Grid item xs={12} lg={5}>
+                <Card variant="outlined" sx={{ height: "100%" }}>
+                  <CardContent>
+                    <Stack spacing={2.5}>
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight={700}>
+                          Crew Details
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Add the primary creative team attached to this movie.
+                        </Typography>
+                      </Box>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} md={6}>
+                          <TextField
+                            label="Director"
+                            name="director"
+                            fullWidth
+                            value={formData.director}
+                            onChange={handleInputChange}
+                          />
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                          <TextField
+                            label="Writer"
+                            name="writer"
+                            fullWidth
+                            value={formData.writer}
+                            onChange={handleInputChange}
+                          />
+                        </Grid>
+                      </Grid>
+                    </Stack>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} lg={7}>
+                <Card variant="outlined" sx={{ height: "100%" }}>
+                  <CardContent>
+                    <Stack spacing={2}>
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight={700}>
+                          Cast Overview
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Add cast names in order. Uploaded cast images are included in the same multipart request.
+                        </Typography>
+                      </Box>
+                      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                        <Chip
+                          label={`${formData.castRows.filter((row) => String(row.name || "").trim()).length} cast entries ready`}
+                          color="primary"
+                          variant="outlined"
+                        />
+                        <Chip
+                          label={`${formData.castRows.filter((row) => row.imageFile || row.existingImage).length} images attached`}
+                          variant="outlined"
+                        />
+                      </Stack>
+                    </Stack>
+                  </CardContent>
+                </Card>
               </Grid>
               <Grid item xs={12}>
-                <Typography fontWeight={600} gutterBottom>
-                  Casts
-                </Typography>
-                <Stack spacing={2} sx={{ maxHeight: 320, overflowY: "auto", pr: 1 }}>
-                  {formData.castRows.map((row, index) => (
-                    <Paper
-                      variant="outlined"
-                      key={`cast-row-${index}`}
-                      sx={{ p: 2, display: "grid", gap: 1, gridTemplateColumns: { md: "1fr auto auto" } }}
-                    >
-                      <TextField
-                        size="small"
-                        value={row.name}
-                        onChange={(e) => handleCastNameChange(index, e.target.value)}
-                        placeholder="Cast name"
-                      />
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        component="label"
-                        startIcon={<Upload size={14} />}
+                <Card variant="outlined">
+                  <CardContent>
+                    <Stack spacing={2}>
+                      <Stack
+                        direction={{ xs: "column", sm: "row" }}
+                        justifyContent="space-between"
+                        alignItems={{ xs: "flex-start", sm: "center" }}
+                        spacing={1}
                       >
-                        {row.imageFile ? "Image Selected" : row.existingImage ? "Replace Image" : "Upload Image"}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          hidden
-                          onChange={(e) => handleCastImageChange(index, e.target.files?.[0] || null)}
-                        />
-                      </Button>
-                      <Button
-                        size="small"
-                        color="error"
-                        variant="outlined"
-                        onClick={() => removeCastRow(index)}
+                        <Stack direction="row" spacing={1.5} alignItems="center">
+                          <UserRound size={18} />
+                          <Typography fontWeight={700}>Cast Members</Typography>
+                        </Stack>
+                        <Button onClick={addCastRow} size="small" variant="outlined">
+                          + Add Cast
+                        </Button>
+                      </Stack>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexWrap: "wrap",
+                          gap: 2,
+                          maxHeight: 520,
+                          overflowY: "auto",
+                          pr: 1,
+                          alignItems: "stretch",
+                        }}
                       >
-                        Remove
-                      </Button>
-                      <Typography variant="caption" color="text.secondary" sx={{ gridColumn: { md: "1 / -1" } }}>
-                        {row.imageFile
-                          ? row.imageFile.name
-                          : row.existingImage
-                            ? `Current image: ${row.existingImage}`
-                            : "No image selected"}
-                      </Typography>
-                    </Paper>
-                  ))}
-                </Stack>
-                <Button onClick={addCastRow} sx={{ mt: 1 }} size="small">
-                  + Add Cast
-                </Button>
+                        {formData.castRows.map((row, index) => {
+                          const castPreview = row.imageFile
+                            ? getMediaUrl(row.imageFile)
+                            : row.existingImage
+                              ? getServerAssetUrl(row.existingImage)
+                              : "";
+
+                          return (
+                            <Paper
+                              variant="outlined"
+                              key={`cast-row-${index}`}
+                              sx={{
+                                p: 2,
+                                flex: "1 1 320px",
+                                minWidth: { xs: "100%", sm: 320 },
+                                maxWidth: { xs: "100%", md: "calc(50% - 8px)" },
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: 2,
+                                borderRadius: 3,
+                              }}
+                            >
+                              <Stack
+                                direction={{ xs: "column", sm: "row" }}
+                                spacing={2}
+                                alignItems={{ xs: "stretch", sm: "flex-start" }}
+                              >
+                                <Box
+                                  sx={{
+                                    width: { xs: "100%", sm: 120 },
+                                    minWidth: { sm: 120 },
+                                    height: 140,
+                                    borderRadius: 2,
+                                    overflow: "hidden",
+                                    border: "1px solid",
+                                    borderColor: "divider",
+                                    bgcolor: "background.default",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }}
+                                >
+                                  {castPreview ? (
+                                    <Box
+                                      component="img"
+                                      src={castPreview}
+                                      alt={`Cast preview ${index + 1}`}
+                                      sx={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                    />
+                                  ) : (
+                                    <Typography variant="caption" color="text.secondary">
+                                      No image
+                                    </Typography>
+                                  )}
+                                </Box>
+
+                                <Stack spacing={1.5} sx={{ flexGrow: 1 }}>
+                                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                                    <Chip size="small" label={`Cast ${index + 1}`} />
+                                    {String(row.name || "").trim() ? (
+                                      <Chip
+                                        size="small"
+                                        color="primary"
+                                        variant="outlined"
+                                        label={row.name}
+                                      />
+                                    ) : null}
+                                  </Stack>
+
+                                  <TextField
+                                    size="small"
+                                    label="Cast Name"
+                                    value={row.name}
+                                    onChange={(e) => handleCastNameChange(index, e.target.value)}
+                                    placeholder="Cast name"
+                                    fullWidth
+                                  />
+                                  <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25}>
+                                    <Button
+                                      size="small"
+                                      variant="outlined"
+                                      component="label"
+                                      startIcon={<Upload size={14} />}
+                                      sx={{ alignSelf: "flex-start" }}
+                                    >
+                                      {row.imageFile
+                                        ? "Change Image"
+                                        : row.existingImage
+                                          ? "Replace Image"
+                                          : "Upload Image"}
+                                      <input
+                                        type="file"
+                                        accept="image/*"
+                                        hidden
+                                        onChange={(e) => handleCastImageChange(index, e.target.files?.[0] || null)}
+                                      />
+                                    </Button>
+                                    <Button
+                                      size="small"
+                                      color="error"
+                                      variant="outlined"
+                                      onClick={() => removeCastRow(index)}
+                                      sx={{ alignSelf: "flex-start" }}
+                                    >
+                                      Remove
+                                    </Button>
+                                  </Stack>
+                                  <Typography variant="caption" color="text.secondary">
+                                    {row.imageFile
+                                      ? row.imageFile.name
+                                      : row.existingImage
+                                        ? `Current image: ${row.existingImage}`
+                                        : "No image selected"}
+                                  </Typography>
+                                </Stack>
+                              </Stack>
+                            </Paper>
+                          );
+                        })}
+                      </Box>
+                    </Stack>
+                  </CardContent>
+                </Card>
               </Grid>
             </Grid>
           )}
@@ -622,12 +1012,12 @@ const Movies = () => {
           <Button onClick={() => setShowModal(false)} color="inherit">
             Cancel
           </Button>
-          {currentStep === 2 && (
+          {currentStep > 1 && (
             <Button variant="outlined" onClick={handleBackStep}>
               Back
             </Button>
           )}
-          {currentStep === 1 ? (
+          {currentStep < 3 ? (
             <Button variant="contained" onClick={handleNextStep} color="primary">
               Next
             </Button>

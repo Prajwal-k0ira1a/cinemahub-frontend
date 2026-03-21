@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { MapPin, Phone, Users, MessageCircle, Search, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { Box, Chip, InputAdornment, Paper, Stack, TextField, Typography } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL, API_SERVER_URL } from "../config/api";
@@ -111,30 +112,78 @@ const Halls = () => {
   return (
     <section className="py-10" id="locations">
       <div className="container mx-auto px-6">
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 className="text-2xl font-bold text-text-primary">Cinema Locations</h2>
-            <p className="text-sm text-text-secondary">Explore halls, view shows, and chat directly with hall admins.</p>
-          </div>
-          <span className="rounded-full border border-white/15 bg-secondary px-3 py-1 text-xs font-semibold text-text-secondary">
-            {filteredHalls.length} / {halls.length} halls
-          </span>
-        </div>
+        <Paper
+          sx={{
+            mb: 4,
+            p: { xs: 2.25, md: 3 },
+            borderRadius: 3,
+            border: "1px solid rgba(255,255,255,0.08)",
+            background:
+              "linear-gradient(180deg, rgba(24,24,27,0.96) 0%, rgba(14,14,16,0.98) 100%)",
+            color: "#fff",
+          }}
+        >
+          <Stack spacing={2.5}>
+            <Stack
+              direction={{ xs: "column", md: "row" }}
+              alignItems={{ xs: "flex-start", md: "center" }}
+              justifyContent="space-between"
+              spacing={2}
+            >
+              <Box>
+                <Typography variant="h5" sx={{ fontWeight: 800, color: "#fff" }}>
+                  Cinema Locations
+                </Typography>
+                <Typography sx={{ mt: 0.75, fontSize: 14, color: "rgba(255,255,255,0.68)" }}>
+                  Explore halls, view shows, and chat directly with hall admins.
+                </Typography>
+              </Box>
+              <Chip
+                label={`${filteredHalls.length} / ${halls.length} halls`}
+                sx={{
+                  borderRadius: 999,
+                  color: "#fff",
+                  fontWeight: 700,
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  backgroundColor: "rgba(255,255,255,0.06)",
+                }}
+              />
+            </Stack>
 
-        <div className="mb-6">
-          <div className="relative">
-            <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-            <input
+            <TextField
+              fullWidth
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by hall name, location, or contact..."
-              className="w-full rounded-xl border border-white/10 bg-secondary py-2.5 pl-9 pr-3 text-sm text-text-primary outline-none focus:border-accent"
+              variant="outlined"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search size={16} color="#94a3b8" />
+                  </InputAdornment>
+                ),
+                sx: {
+                  borderRadius: 3,
+                  color: "#fff",
+                  backgroundColor: "rgba(255,255,255,0.04)",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.12)",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.22)",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#e50914",
+                  },
+                },
+              }}
             />
-          </div>
-          <p className="mt-2 text-xs text-text-secondary">
-            Showing halls in: <span className="font-semibold text-text-primary">{selectedCity}</span>
-          </p>
-        </div>
+
+            <Typography sx={{ fontSize: 12, color: "rgba(255,255,255,0.62)" }}>
+              Showing halls in: <Box component="span" sx={{ fontWeight: 700, color: "#fff" }}>{selectedCity}</Box>
+            </Typography>
+          </Stack>
+        </Paper>
 
         {loading ? (
           <div className="rounded-xl border border-white/10 bg-secondary p-8 text-sm text-text-secondary">

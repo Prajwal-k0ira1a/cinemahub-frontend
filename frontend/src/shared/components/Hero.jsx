@@ -432,36 +432,6 @@ const Hero = () => {
             </motion.div>
           </AnimatePresence>
         </div>
-
-        {/* Chevron navigation (left/right manual slide switching) is temporarily disabled.
-            Keep this block for later re-enable with the same wrap-around + autoplay pause logic.
-        <motion.button
-          onClick={() => {
-            setActiveIndex(
-              (prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length,
-            );
-            setAutoPlay(false);
-            setTimeout(() => setAutoPlay(true), 5000);
-          }}
-          className="absolute right-8 bottom-30 -translate-y-1/2 z-30 bg-white/40 backdrop-blur text-white p-3  hover:bg-red-700 transition-colors drop-shadow-lg"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <ChevronLeft size={28} />
-        </motion.button>
-        <motion.button
-          onClick={() => {
-            setActiveIndex((prev) => (prev + 1) % HERO_SLIDES.length);
-            setAutoPlay(false);
-            setTimeout(() => setAutoPlay(true), 5000);
-          }}
-          className="absolute right-8 bottom-50 -translate-y-1/2 z-30 bg-white/40 backdrop-blur text-white p-3  hover:bg-red-600 transition-colors drop-shadow-lg"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <ChevronRight size={28} />
-        </motion.button>
-        */}
       </section>
 
       {/* ==================== CAROUSEL SECTION ==================== */}
@@ -471,25 +441,10 @@ const Hero = () => {
           <div className="flex items-center justify-between mb-6 px-6 lg:px-20 ">
             <h2 className="text-text-primary font-bold tracking-wider uppercase text-sm flex items-center gap-3">
               <span className="w-8 h-0.5 bg-accent" aria-hidden="true" />
-              <span>NOW SHOWING</span>
+          
             </h2>
           </div>
 
-          {/* Thumbnails */}
-          <div
-            className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide px-6 lg:px-20"
-            role="list"
-          >
-            {movies.map((movie, index) => (
-              <ThumbnailCard
-                key={movie.id || `${movie.movie_title}-${index}`}
-                movie={movie}
-                index={index}
-                activeIndex={activeIndex}
-                onClick={() => handleThumbnailClick(index)}
-              />
-            ))}
-          </div>
         </div>
       </section>
     </div>
