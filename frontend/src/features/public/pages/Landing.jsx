@@ -116,30 +116,7 @@ const TOP_MOVIES = [
   },
 ];
 
-const COMING_SOON = [
-  {
-    title: "Sinners",
-    image:
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=640&q=80",
-  },
-  {
-    title: "Neighborhood Watch",
-    image:
-      "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=640&q=80",
-  },
-  {
-    title: "Sebastian",
-    image: heroPoster,
-  },
-  {
-    title: "The Quiet",
-    image: dunePoster,
-  },
-  {
-    title: "Wicked Pain",
-    image: oppenPoster,
-  },
-];
+
 
 const TESTIMONIALS = [
   {
@@ -201,7 +178,7 @@ const APP_BADGES = [
 ];
 
 const sectionSurface = {
-  borderRadius: 8,
+  borderRadius: 0,
   border: "1px solid rgba(255,255,255,0.08)",
   background:
     "linear-gradient(180deg, rgba(24,24,27,0.95) 0%, rgba(10,10,10,0.98) 100%)",
@@ -212,7 +189,7 @@ const cardSurface = {
   height: "100%",
   display: "flex",
   flexDirection: "column",
-  borderRadius: 7,
+  borderRadius: 0,
   border: "1px solid rgba(255,255,255,0.08)",
   background:
     "linear-gradient(180deg, rgba(28,28,30,0.98) 0%, rgba(16,16,18,0.98) 100%)",
@@ -264,7 +241,7 @@ const SectionHeading = ({ eyebrow, title, description, actionLabel }) => (
         endIcon={<ArrowRight size={16} />}
         sx={{
           color: "#fff",
-          borderRadius: 999,
+          borderRadius: 0,
           px: 2.5,
           py: 1.1,
           border: "1px solid rgba(229,9,20,0.5)",
@@ -347,6 +324,7 @@ function MovieCard({ image, title, genre, runtime, rating }) {
                 size="small"
                 sx={{
                   color: "#ffd54f",
+                  borderRadius: 0,
                   borderColor: "rgba(255,213,79,0.3)",
                   backgroundColor: "rgba(255,213,79,0.08)",
                   "& .MuiChip-icon": { color: "#ffd54f" },
@@ -379,7 +357,7 @@ function MovieCard({ image, title, genre, runtime, rating }) {
             size="small"
             variant="contained"
             sx={{
-              borderRadius: 999,
+              borderRadius: 0,
               backgroundColor: "#e50914",
               color: "#fff",
               textTransform: "none",
@@ -395,7 +373,7 @@ function MovieCard({ image, title, genre, runtime, rating }) {
             size="small"
             variant="outlined"
             sx={{
-              borderRadius: 999,
+              borderRadius: 0,
               color: "#fff",
               borderColor: "rgba(255,255,255,0.72)",
               textTransform: "none",
@@ -414,41 +392,7 @@ function MovieCard({ image, title, genre, runtime, rating }) {
   );
 }
 
-const ComingSoonCard = ({ title, image }) => (
-  <Card sx={{ ...cardSurface, position: "relative", overflow: "hidden" }}>
-    <CardMedia component="img" image={image} alt={`${title} preview`} sx={{ height: 340 }} />
-    <Box
-      sx={{
-        position: "absolute",
-        inset: 0,
-        background: "linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.82) 100%)",
-      }}
-    />
-    <CardContent
-      sx={{
-        position: "absolute",
-        inset: "auto 0 0 0",
-        zIndex: 1,
-      }}
-    >
-      <Typography variant="overline" sx={{ color: "rgba(255,255,255,0.7)", letterSpacing: "0.32em" }}>
-        Coming Soon
-      </Typography>
-      <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }}>
-        {title}
-      </Typography>
-      <Chip
-        label="Pre-register"
-        sx={{
-          borderRadius: 999,
-          color: "#fff",
-          backgroundColor: "rgba(255,255,255,0.10)",
-          border: "1px solid rgba(255,255,255,0.18)",
-        }}
-      />
-    </CardContent>
-  </Card>
-);
+
 
 const TestimonialCard = ({ quote, name, role, avatar }) => (
   <Paper sx={{ ...cardSurface, p: 3 }}>
@@ -563,21 +507,8 @@ export default function Landing() {
             description="Get ready for premieres and reserve before tickets drop."
             actionLabel="Pre-register"
           />
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: {
-                xs: "1fr",
-                md: "repeat(2, minmax(0, 1fr))",
-                lg: "repeat(3, minmax(0, 1fr))",
-              },
-              gap: 3,
-            }}
-          >
-            {COMING_SOON.map((movie) => (
-              <ComingSoonCard key={movie.title} {...movie} />
-            ))}
-          </Box>
+        
+         
         </Paper>
       </Container>
 
@@ -598,111 +529,9 @@ export default function Landing() {
               alignItems: "center",
             }}
           >
-            <Stack spacing={2.5}>
-              <Typography variant="overline" sx={{ color: "rgba(255,255,255,0.6)", letterSpacing: "0.36em" }}>
-                Exclusive Offer
-              </Typography>
-              <Typography variant="h4" sx={{ fontWeight: 900 }}>
-                Book tickets to your favorite movies online
-              </Typography>
-              <Typography sx={{ color: "rgba(255,255,255,0.7)", maxWidth: 560, lineHeight: 1.8 }}>
-                Save time at the lobby, see seat availability, and access curated bundles created for the week.
-              </Typography>
-              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-                <Button
-                  component={RouterLink}
-                  to="/movies"
-                  variant="contained"
-                  sx={{
-                    borderRadius: 999,
-                    px: 3,
-                    py: 1.4,
-                    fontWeight: 800,
-                    backgroundColor: "#e50914",
-                    textTransform: "none",
-                    "&:hover": { backgroundColor: "#c80811" },
-                  }}
-                >
-                  Start booking
-                </Button>
-                <Button
-                  component={RouterLink}
-                  to="/locations"
-                  variant="outlined"
-                  sx={{
-                    borderRadius: 999,
-                    px: 3,
-                    py: 1.4,
-                    fontWeight: 800,
-                    color: "#fff",
-                    borderColor: "rgba(255,255,255,0.32)",
-                    textTransform: "none",
-                    "&:hover": {
-                      borderColor: "#e50914",
-                      backgroundColor: "rgba(229,9,20,0.08)",
-                    },
-                  }}
-                >
-                  Explore halls
-                </Button>
-              </Stack>
-            </Stack>
+         
 
-            <Paper
-              sx={{
-                borderRadius: 7,
-                border: "1px solid rgba(255,255,255,0.10)",
-                p: 3,
-                background:
-                  "radial-gradient(circle at top, rgba(255,255,255,0.18), rgba(255,255,255,0.04) 30%, rgba(0,0,0,0.2) 70%)",
-              }}
-            >
-              <Stack spacing={3} alignItems="center">
-                <Box
-                  sx={{
-                    width: 170,
-                    height: 320,
-                    borderRadius: 8,
-                    border: "1px solid rgba(255,255,255,0.16)",
-                    background:
-                      "linear-gradient(180deg, rgba(13,13,14,0.98) 0%, rgba(2,2,3,1) 100%)",
-                    boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.03), 0 20px 60px rgba(0,0,0,0.38)",
-                  }}
-                />
-                <Typography align="center" sx={{ color: "rgba(255,255,255,0.68)" }}>
-                  Enjoy the Ticketor mobile experience with offline tickets, favorites, and push notifications.
-                </Typography>
-                <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} sx={{ width: "100%" }}>
-                  {APP_BADGES.map((badge) => (
-                    <Button
-                      key={badge.label}
-                      fullWidth
-                      startIcon={<Download size={16} />}
-                      sx={{
-                        justifyContent: "flex-start",
-                        borderRadius: 4,
-                        p: 1.5,
-                        color: "#fff",
-                        border: "1px solid rgba(255,255,255,0.10)",
-                        backgroundColor: "rgba(0,0,0,0.28)",
-                        textTransform: "none",
-                        "&:hover": {
-                          borderColor: "rgba(229,9,20,0.45)",
-                          backgroundColor: "rgba(229,9,20,0.10)",
-                        },
-                      }}
-                    >
-                      <Box sx={{ textAlign: "left" }}>
-                        <Typography sx={{ fontSize: 13, fontWeight: 800 }}>{badge.label}</Typography>
-                        <Typography sx={{ fontSize: 11, color: "rgba(255,255,255,0.58)" }}>
-                          {badge.detail}
-                        </Typography>
-                      </Box>
-                    </Button>
-                  ))}
-                </Stack>
-              </Stack>
-            </Paper>
+           
           </Box>
         </Paper>
       </Container>
@@ -743,7 +572,7 @@ export default function Landing() {
                 onChange={(_, expanded) => setOpenFaq(expanded ? index : -1)}
                 disableGutters
                 sx={{
-                  borderRadius: "24px !important",
+                  borderRadius: "0 !important",
                   border: "1px solid rgba(255,255,255,0.08)",
                   background:
                     "linear-gradient(180deg, rgba(28,28,30,0.98) 0%, rgba(15,15,16,0.98) 100%)",
@@ -802,7 +631,7 @@ export default function Landing() {
               variant="outlined"
               InputProps={{
                 sx: {
-                  borderRadius: 4,
+                  borderRadius: 0,
                   color: "#fff",
                   backgroundColor: "rgba(255,255,255,0.04)",
                   "& .MuiOutlinedInput-notchedOutline": {
@@ -820,7 +649,7 @@ export default function Landing() {
             <Button
               variant="contained"
               sx={{
-                borderRadius: 4,
+                borderRadius: 0,
                 minWidth: { sm: 170 },
                 px: 3.5,
                 py: 1.7,

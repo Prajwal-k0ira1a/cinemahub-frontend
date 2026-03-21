@@ -14,6 +14,8 @@ import {
   Stack,
   TextField,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import axios from "axios";
 import { API_BASE_URL, API_SERVER_URL } from "../config/api";
@@ -54,17 +56,20 @@ const normalizeYear = (releaseDate) => {
 };
 
 const MovieCard = ({ movie }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [isHovered, setIsHovered] = useState(false);
+  const showDetails = isMobile || isHovered;
 
   return (
     <Card
       sx={{
         width: "100%",
-        maxWidth: 345,
-        minHeight: 420,
+        maxWidth: { xs: "100%", sm: 345 },
+        minHeight: { xs: "auto", sm: 420 },
         position: "relative",
         overflow: "hidden",
-        borderRadius: "18px",
+        borderRadius: { xs: "12px", sm: "18px" },
         border: "1px solid rgba(255,255,255,0.08)",
         backgroundColor: "#141414",
         color: "#fff",
@@ -86,7 +91,7 @@ const MovieCard = ({ movie }) => {
         alt={`${movie.title} poster`}
         image={movie.image}
         sx={{
-          height: 420,
+          height: { xs: 240, sm: 420 },
           objectFit: "cover",
         }}
       />
@@ -100,11 +105,11 @@ const MovieCard = ({ movie }) => {
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          p: 1.25,
-          opacity: isHovered ? 1 : 0,
-          visibility: isHovered ? "visible" : "hidden",
+          p: { xs: 1.5, sm: 1.25 },
+          opacity: showDetails ? 1 : 0,
+          visibility: showDetails ? "visible" : "hidden",
           transition: "opacity 0.3s ease-in-out, visibility 0.3s ease-in-out",
-          pointerEvents: isHovered ? "auto" : "none",
+          pointerEvents: showDetails ? "auto" : "none",
         }}
       >
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 1 }}>
@@ -133,19 +138,24 @@ const MovieCard = ({ movie }) => {
         </Box>
 
         <Box>
-          <CardContent sx={{ pb: 1 }}>
-            <Typography gutterBottom variant="h5" component="div" sx={{ color: "#fff", fontWeight: 800 }}>
+          <CardContent sx={{ px: { xs: 0.5, sm: 2 }, pb: 1 }}>
+            <Typography
+              gutterBottom
+              variant="h5"
+              component="div"
+              sx={{ color: "#fff", fontWeight: 800, fontSize: { xs: "1.15rem", sm: "1.5rem" }, lineHeight: 1.15 }}
+            >
               {movie.title}
             </Typography>
-            <Typography sx={{ mb: 1.5, color: "rgba(255,255,255,0.72)", fontSize: 14 }}>
+            <Typography sx={{ mb: 1.25, color: "rgba(255,255,255,0.72)", fontSize: { xs: 13, sm: 14 } }}>
               {movie.director}
             </Typography>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-              <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.72)", display: "flex", alignItems: "center", gap: 0.8 }}>
+              <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.72)", display: "flex", alignItems: "center", gap: 0.8, fontSize: { xs: 13, sm: 14 } }}>
                 <Clock3 size={14} />
                 {movie.duration}
               </Typography>
-              <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.72)", display: "flex", alignItems: "center", gap: 0.8 }}>
+              <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.72)", display: "flex", alignItems: "center", gap: 0.8, fontSize: { xs: 13, sm: 14 } }}>
                 <Film size={14} />
                 {movie.tags.join(" | ")}
               </Typography>
@@ -155,9 +165,12 @@ const MovieCard = ({ movie }) => {
           <CardActions
             sx={{
               justifyContent: "space-around",
-              px: 2,
-              pb: 2,
+              flexDirection: { xs: "column", sm: "row" },
+              alignItems: "stretch",
+              px: { xs: 1, sm: 2 },
+              pb: { xs: 1, sm: 2 },
               pt: 0.5,
+              gap: { xs: 1, sm: 0 },
             }}
           >
             {movie.id ? (
@@ -167,6 +180,7 @@ const MovieCard = ({ movie }) => {
                 size="small"
                 variant="contained"
                 sx={{
+                  width: { xs: "100%", sm: "auto" },
                   borderRadius: 999,
                   backgroundColor: "#e50914",
                   color: "#fff",
@@ -190,6 +204,7 @@ const MovieCard = ({ movie }) => {
                 size="small"
                 variant="outlined"
                 sx={{
+                  width: { xs: "100%", sm: "auto" },
                   borderRadius: 999,
                   color: "#fff",
                   borderColor: "rgba(255,255,255,0.72)",
@@ -217,8 +232,9 @@ const MovieCard = ({ movie }) => {
           sx={{
             position: "absolute",
             inset: "auto 0 0 0",
-            p: 1.5,
+            p: { xs: 1.25, sm: 1.5 },
             background: "linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.9) 100%)",
+            display: { xs: "none", sm: "block" },
           }}
         >
           <Typography sx={{ color: "#fff", fontSize: 18, fontWeight: 800, lineHeight: 1.2 }}>
@@ -284,11 +300,11 @@ const Movies = () => {
 
   return (
     <section className="py-10">
-      <div className="container mx-auto px-6">
+      <div className="container mx-auto px-4 sm:px-6">
         <Paper
           sx={{
             mb: 4,
-            p: { xs: 2.25, md: 3 },
+            p: { xs: 2, md: 3 },
             borderRadius: 3,
             border: "1px solid rgba(255,255,255,0.08)",
             background:
@@ -307,7 +323,7 @@ const Movies = () => {
                 <Typography variant="h5" sx={{ fontWeight: 800, color: "#fff" }}>
                   Now Playing
                 </Typography>
-                <Typography sx={{ mt: 0.75, fontSize: 14, color: "rgba(255,255,255,0.68)" }}>
+                <Typography sx={{ mt: 0.75, fontSize: { xs: 13, sm: 14 }, color: "rgba(255,255,255,0.68)" }}>
                   Browse and book from currently listed movies.
                 </Typography>
               </Box>
@@ -327,7 +343,7 @@ const Movies = () => {
               fullWidth
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by movie title, director, genre, year, or duration..."
+              placeholder="Search movies, genres, year..."
               variant="outlined"
               InputProps={{
                 startAdornment: (
@@ -396,7 +412,7 @@ const Movies = () => {
             No movies match your search.
           </Paper>
         ) : (
-          <div className="grid grid-cols-1 justify-items-center gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
             {filteredMovies.map((movie, index) => (
               <MovieCard key={`${movie.id || movie.title}-${index}`} movie={movie} />
             ))}

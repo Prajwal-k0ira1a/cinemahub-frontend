@@ -390,16 +390,16 @@ export default function MovieDetail() {
 
   if (loading) {
     return (
-      <section className="min-h-[60vh] bg-[#0a0a0a] py-20 pt-24">
-        <div className="mx-auto max-w-6xl px-6 text-gray-300">Loading movie details...</div>
+      <section className="min-h-[60vh] bg-[#0a0a0a] px-4 py-16 pt-20 sm:px-6 sm:py-20 sm:pt-24">
+        <div className="mx-auto max-w-6xl text-white/70">Loading movie details...</div>
       </section>
     );
   }
 
   if (error || !movie) {
     return (
-      <section className="min-h-[60vh] bg-[#0a0a0a] py-20 pt-24">
-        <div className="mx-auto max-w-6xl px-6">
+      <section className="min-h-[60vh] bg-[#0a0a0a] px-4 py-16 pt-20 sm:px-6 sm:py-20 sm:pt-24">
+        <div className="mx-auto max-w-6xl">
           <p className="text-red-400">{error || "Movie not found."}</p>
           <Link to="/movies" className="mt-4 inline-block rounded border border-white/10 px-6 py-3 text-sm font-semibold hover:bg-white/5">
             Back to list
@@ -410,7 +410,7 @@ export default function MovieDetail() {
   }
 
   return (
-    <section className="min-h-screen bg-[#0a0a0a] pb-14 pt-6 md:pt-8 font-[Oswald] text-white">
+    <section className="min-h-screen bg-[#0a0a0a] pb-12 pt-4 sm:pb-14 sm:pt-6 md:pt-8 font-[Oswald] text-white">
       <MovieDetailPanel
         movie={movie}
         genreLabel={genreLabel}

@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   Armchair,
   CalendarDays,
-  CheckCircle2,
   Clock3,
   CreditCard,
   MapPin,
@@ -17,12 +16,12 @@ const SEAT_COLORS = {
   regular: "text-[#ece8dc]",
   premium: "text-sky-300",
   sold: "text-[#56556f]",
-  locked: "text-slate-500",
+  locked: "text-green-500",
   selected: "text-[#e50914]",
 };
 
 const panelClass =
-  "rounded-lg border border-white/10 bg-[#0f1119]/95 shadow-[0_18px_42px_rgba(0,0,0,0.32)] backdrop-blur-sm";
+  "border border-white/10 bg-[#0f1119]/95 shadow-[0_18px_42px_rgba(0,0,0,0.32)] backdrop-blur-sm";
 
 const PAYMENT_METHODS = [
   {
@@ -145,25 +144,25 @@ export default function BookingPanel({
   };
 
   const renderStepHeader = () => (
-    <div className="flex items-center justify-between gap-4">
+    <div className="flex items-center justify-between gap-2 sm:gap-4">
       {["Seat", "Payment", "Ticket"].map((label, index) => {
         const active = index === activeStep;
         const complete = index < activeStep;
         return (
-          <div key={label} className="flex min-w-0 flex-1 items-center gap-3">
-            <div className="flex flex-col gap-2">
-              <span className={`text-sm font-semibold ${active ? "text-white" : "text-white/60"}`}>{label}</span>
+          <div key={label} className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+            <div className="flex flex-col gap-1.5 sm:gap-2">
+              <span className={`text-xs font-semibold sm:text-sm ${active ? "text-white" : "text-white/60"}`}>{label}</span>
               <span
-                className={`h-5 w-5 rounded-full border ${
+                className={`h-4 w-4 border sm:h-5 sm:w-5 ${
                   active
                     ? "border-[#e50914] bg-[#e50914]"
                     : complete
                       ? "border-[#e50914]/40 bg-[#e50914]/15"
-                      : "border-white/20 bg-[#2c2e3a]"
+                      : "border-white/20 bg-black"
                 }`}
               />
             </div>
-            {index < 2 ? <div className="mt-6 h-px flex-1 bg-white/15" /> : null}
+            {index < 2 ? <div className="mt-5 h-px flex-1 bg-white/15 sm:mt-6" /> : null}
           </div>
         );
       })}
@@ -171,15 +170,15 @@ export default function BookingPanel({
   );
 
   const renderSeatGrid = () => (
-    <div className="mt-6 overflow-x-auto">
+    <div className="-mx-2 mt-5 overflow-x-auto px-2 sm:mx-0 sm:mt-6 sm:px-0">
       <div className="mx-auto min-w-max space-y-3">
         {seatRows.map((row) => (
-          <div key={row.rowNumber} className="flex items-center justify-center gap-3">
-            <div className="w-5 text-right text-xl font-semibold text-white/85">{row.rowLabel}</div>
-            <div className="flex items-center gap-1.5">
+          <div key={row.rowNumber} className="flex items-center justify-center gap-2 sm:gap-3">
+            <div className="w-4 text-right text-sm font-semibold text-white/85 sm:w-5 sm:text-xl">{row.rowLabel}</div>
+            <div className="flex items-center gap-1 sm:gap-1.5">
               {row.seats.map((seat) => {
                 if (seat.type === "gap") {
-                  return <span key={seat.id} className="h-7 w-7" />;
+                  return <span key={seat.id} className="h-5 w-5 sm:h-7 sm:w-7" />;
                 }
 
                 const isSelected = selectedSeatIds.includes(seat.id);
@@ -202,7 +201,7 @@ export default function BookingPanel({
                     onClick={() => onToggleSeatSelection(seat)}
                     disabled={isBooked || isHeld}
                     title={seat.seat_number}
-                    className={`grid h-8 w-8 place-items-center rounded-md border transition ${
+                    className={`grid h-7 w-7 place-items-center border transition sm:h-8 sm:w-8 ${
                       isSelected
                         ? "border-[#e50914]/60 bg-[#e50914]/10"
                         : "border-white/10 bg-transparent"
@@ -212,12 +211,12 @@ export default function BookingPanel({
                         : "hover:-translate-y-0.5 hover:bg-white/[0.04]"
                     }`}
                   >
-                    <Armchair size={18} className={seatColorClass} />
+                    <Armchair size={16} className={seatColorClass} />
                   </button>
                 );
               })}
             </div>
-            <div className="w-5 text-left text-xl font-semibold text-white/85">{row.rowLabel}</div>
+            <div className="w-4 text-left text-sm font-semibold text-white/85 sm:w-5 sm:text-xl">{row.rowLabel}</div>
           </div>
         ))}
       </div>
@@ -228,21 +227,21 @@ export default function BookingPanel({
     <>
       <div className="relative mx-auto mt-6 h-24 w-full max-w-3xl overflow-visible">
         <div className="absolute left-1/2 top-0 h-[72px] w-[78%] -translate-x-1/2">
-          <div className="h-full w-full [clip-path:polygon(10%_0,90%_0,80%_100%,20%_100%)] bg-[#616077]" />
-          <div className="absolute inset-0 flex items-center justify-center text-lg text-white/60">Stage</div>
+          <div className="h-full w-full [clip-path:polygon(10%_0,90%_0,80%_100%,20%_100%)] bg-white/25" />
+          <div className="absolute inset-0 flex items-center justify-center text-sm uppercase tracking-[0.2em] text-white/60 sm:text-lg sm:tracking-normal">Screen</div>
         </div>
         <div className="pointer-events-none absolute left-1/2 top-[70px] h-14 w-[60%] -translate-x-1/2 rounded-full bg-white/10 blur-3xl" />
       </div>
 
       {bookingLoading ? (
-        <div className="mt-8 rounded-md border border-white/10 bg-black/20 p-8 text-center text-sm text-slate-300">
+        <div className="mt-8 rounded-md border border-white/10 bg-black/20 p-8 text-center text-sm text-white/70">
           Loading seats...
         </div>
       ) : (
         <>
           {renderSeatGrid()}
 
-          <div className="mt-6 flex flex-col gap-4 rounded-md border border-white/10 bg-white/[0.02] p-4">
+          <div className="mt-6 flex flex-col gap-4 border border-white/10 bg-white/[0.02] p-3 sm:p-4">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-2 text-white/80">
                 <Ticket size={16} className="text-[#e50914]" />
@@ -280,14 +279,14 @@ export default function BookingPanel({
             type="button"
             disabled={!method.enabled}
             onClick={() => method.enabled && setSelectedPayment(method.id)}
-            className={`flex w-full items-center justify-between rounded-md border p-4 text-left transition ${
+            className={`flex w-full items-center justify-between border p-3 text-left transition sm:p-4 ${
               active
                 ? "border-[#e50914]/35 bg-[#e50914]/10"
                 : "border-white/10 bg-white/[0.02]"
             } ${method.enabled ? "hover:bg-white/[0.04]" : "cursor-not-allowed opacity-60"}`}
           >
             <div className="flex items-center gap-3">
-              <div className={`grid h-11 w-11 place-items-center rounded-md ${active ? "bg-[#e50914]/15 text-[#e50914]" : "bg-white/[0.04] text-white/70"}`}>
+              <div className={`grid h-10 w-10 place-items-center sm:h-11 sm:w-11 ${active ? "bg-[#e50914]/15 text-[#e50914]" : "bg-white/[0.04] text-white/70"}`}>
                 <Icon size={18} />
               </div>
               <div>
@@ -300,9 +299,9 @@ export default function BookingPanel({
         );
       })}
 
-      <div className="rounded-md border border-sky-400/15 bg-sky-400/10 p-4">
+      <div className="border border-[#e50914]/20 bg-[#e50914]/10 p-4">
         <div className="flex items-start gap-3">
-          <ShieldCheck size={18} className="mt-0.5 shrink-0 text-sky-300" />
+          <ShieldCheck size={18} className="mt-0.5 shrink-0 text-[#e50914]" />
           <div>
             <p className="font-medium text-white">Secure payment</p>
             <p className="mt-1 text-sm text-white/65">
@@ -322,7 +321,7 @@ export default function BookingPanel({
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-md border border-white/10 bg-white/[0.02] p-4">
+        <div className="border border-white/10 bg-white/[0.02] p-4">
           <p className="text-xs uppercase tracking-[0.14em] text-white/45">Session details</p>
           <div className="mt-4 space-y-3">
             <div className="flex items-center justify-between text-sm">
@@ -340,7 +339,7 @@ export default function BookingPanel({
           </div>
         </div>
 
-        <div className="rounded-md border border-[#e50914]/20 bg-[#e50914]/10 p-4">
+        <div className="border border-[#e50914]/20 bg-[#e50914]/10 p-4">
           <p className="text-xs uppercase tracking-[0.14em] text-white/45">Payment summary</p>
           <div className="mt-4 space-y-3">
             <div className="flex items-center justify-between text-sm">
@@ -369,25 +368,25 @@ export default function BookingPanel({
 
   return (
     <div className="fixed inset-0 z-50 bg-[#090b10]/92 backdrop-blur-sm">
-      <div className="h-full overflow-y-auto px-4 py-4 md:px-6 md:py-6">
+      <div className="h-full overflow-y-auto px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-6">
         <div className="mx-auto w-full max-w-7xl">
           <div className={`${panelClass} overflow-hidden`}>
-            <div className="border-b border-white/10 px-4 py-5 md:px-6">
+            <div className="sticky top-0 z-10 border-b border-white/10 bg-[#0f1119]/95 px-3 py-4 sm:px-4 sm:py-5 md:px-6">
               <div className="flex flex-col gap-5">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-md bg-[#e50914] px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-white">
+                      <span className="bg-[#e50914] px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-white">
                         Booking
                       </span>
-                      <span className="rounded-md border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/70">
+                      <span className="border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/70">
                         {genreLabel}
                       </span>
-                      <span className="rounded-md border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/70">
+                      <span className="border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/70">
                         {formatDuration(movie?.duration)}
                       </span>
                     </div>
-                    <h3 className="mt-3 text-2xl font-bold tracking-tight text-white md:text-3xl">
+                    <h3 className="mt-3 text-xl font-bold tracking-tight text-white sm:text-2xl md:text-3xl">
                       {movie?.movie_title || "Movie Booking"}
                     </h3>
                     <p className="mt-1 text-sm text-white/60">
@@ -398,7 +397,7 @@ export default function BookingPanel({
                   <button
                     type="button"
                     onClick={onClose}
-                    className="self-start rounded-md border border-white/10 bg-white/5 p-2 text-white/80 transition hover:bg-white/10"
+                    className="self-start border border-white/10 bg-white/5 p-2 text-white/80 transition hover:bg-white/10"
                   >
                     <X size={16} />
                   </button>
@@ -408,14 +407,14 @@ export default function BookingPanel({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-5 p-4 md:p-6 xl:grid-cols-[300px_minmax(0,1fr)_300px]">
-              <aside className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 p-3 sm:gap-5 sm:p-4 md:p-6 xl:grid-cols-[280px_minmax(0,1fr)_280px]">
+              <aside className="order-1 space-y-4 xl:order-1">
                 <div className={panelClass}>
-                  <div className="p-4">
+                  <div className="p-3 sm:p-4">
                     <img
                       src={getPosterUrl(movie?.moviePoster)}
                       alt={movie?.movie_title || "Movie"}
-                      className="h-64 w-full rounded-md object-cover"
+                      className="h-44 w-full object-cover sm:h-56 md:h-64"
                     />
 
                     <div className="mt-4">
@@ -428,7 +427,7 @@ export default function BookingPanel({
                       </div>
                     </div>
 
-                    <div className="mt-6 rounded-md border border-white/10 bg-white/[0.03] p-4">
+                    <div className="mt-5 border border-white/10 bg-white/[0.03] p-3 sm:mt-6 sm:p-4">
                       <div className="flex items-start gap-2 text-sm text-white/75">
                         <CalendarDays size={15} className="mt-0.5 shrink-0 text-[#e50914]" />
                         <div>
@@ -455,10 +454,10 @@ export default function BookingPanel({
                               key={dateKey}
                               type="button"
                               onClick={() => onSelectBookingDate?.(dateKey)}
-                              className={`rounded-md px-3 py-2 text-xs font-semibold transition ${
+                              className={`border px-3 py-2 text-xs font-semibold transition ${
                                 active
-                                  ? "bg-[#e50914] text-white"
-                                  : "border border-white/10 bg-white/5 text-white/65 hover:bg-white/10"
+                                  ? "border-[#e50914] bg-[#e50914] text-white"
+                                  : "border-white/10 bg-white/5 text-white/65 hover:bg-white/10"
                               }`}
                             >
                               {prettyDateChip(dateKey)}
@@ -478,10 +477,10 @@ export default function BookingPanel({
                               key={time.id}
                               type="button"
                               onClick={() => onOpenBooking(time.id)}
-                              className={`rounded-md px-3 py-2 text-xs font-semibold transition ${
+                              className={`border px-3 py-2 text-xs font-semibold transition ${
                                 active
-                                  ? "bg-[#f4f4f5] text-black"
-                                  : "border border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
+                                  ? "border-[#e50914] bg-[#e50914] text-white"
+                                  : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
                               }`}
                             >
                               {formatTime(time.start_time)}
@@ -494,22 +493,22 @@ export default function BookingPanel({
                 </div>
               </aside>
 
-              <section className={panelClass}>
-                <div className="p-4 md:p-5">{renderMainStep()}</div>
+              <section className={`order-2 ${panelClass}`}>
+                <div className="p-3 sm:p-4 md:p-5">{renderMainStep()}</div>
               </section>
 
-              <aside className={panelClass}>
-                <div className="p-4">
+              <aside className={`order-3 ${panelClass}`}>
+                <div className="p-3 sm:p-4">
                   <p className="text-lg font-semibold text-white">Selected Seats</p>
 
                   <div className="mt-5 space-y-3">
-                    <div className="rounded-md border border-white/10 p-4">
+                    <div className="border border-white/10 p-4">
                       <div className="flex items-center justify-between text-base text-white">
                         <span>Regular $300</span>
                         <span>{regularSeatCount}</span>
                       </div>
                     </div>
-                    <div className="rounded-md border border-white/10 p-4">
+                    <div className="border border-white/10 p-4">
                       <div className="flex items-center justify-between text-base text-white">
                         <span>Premium $500</span>
                         <span>{premiumSeatCount}</span>
@@ -517,7 +516,7 @@ export default function BookingPanel({
                     </div>
                   </div>
 
-                  <div className="mt-6 rounded-md border border-white/10 bg-white/[0.03] p-4">
+                  <div className="mt-6 border border-white/10 bg-white/[0.03] p-4">
                     <p className="text-xs uppercase tracking-[0.14em] text-white/45">Selected seat numbers</p>
                     <p className="mt-2 text-sm text-white/85">{selectedSeatLabels || "None"}</p>
                   </div>
@@ -537,12 +536,12 @@ export default function BookingPanel({
                     </div>
                   </div>
 
-                  <div className="mt-6 flex flex-col gap-3">
+                  <div className="mt-6 flex flex-col gap-3 border-t border-white/10 pt-4 sm:border-t-0 sm:pt-0 md:sticky md:bottom-0 md:bg-transparent">
                     {activeStep > 0 ? (
                       <button
                         type="button"
                         onClick={handleBack}
-                        className="h-12 w-full rounded-md border border-white/10 bg-transparent text-sm font-semibold text-white/70 transition hover:bg-white/5"
+                        className="h-11 w-full border border-white/10 bg-transparent text-sm font-semibold text-white/70 transition hover:bg-white/5 sm:h-12"
                       >
                         Back
                       </button>
@@ -553,7 +552,7 @@ export default function BookingPanel({
                         type="button"
                         onClick={handleNext}
                         disabled={(activeStep === 0 && !canGoPayment) || (activeStep === 1 && !canConfirm)}
-                        className="h-12 w-full rounded-md bg-[#e50914] text-base font-semibold text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="h-11 w-full bg-[#e50914] text-base font-semibold text-white transition hover:bg-[#b20710] disabled:cursor-not-allowed disabled:opacity-60 sm:h-12"
                       >
                         {activeStep === 0 ? "Add to Cart" : "Continue"}
                       </button>
@@ -562,7 +561,7 @@ export default function BookingPanel({
                         type="button"
                         onClick={onSubmitBooking}
                         disabled={bookingSubmitting || !canConfirm}
-                        className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-[#e50914] text-base font-semibold text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="flex h-11 w-full items-center justify-center gap-2 bg-[#e50914] text-base font-semibold text-white transition hover:bg-[#b20710] disabled:cursor-not-allowed disabled:opacity-60 sm:h-12"
                       >
                         {bookingSubmitting ? "Generating Ticket..." : "Confirm Booking"}
                       </button>
@@ -571,7 +570,7 @@ export default function BookingPanel({
                     <button
                       type="button"
                       onClick={onClose}
-                      className="h-12 w-full rounded-md border border-white/20 bg-transparent text-base font-semibold text-white transition hover:bg-white/5"
+                      className="h-11 w-full border border-white/20 bg-transparent text-base font-semibold text-white transition hover:bg-white/5 sm:h-12"
                     >
                       Cancel
                     </button>

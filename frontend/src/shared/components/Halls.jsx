@@ -1,7 +1,20 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { MapPin, Phone, Users, MessageCircle, Search, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
-import { Box, Chip, InputAdornment, Paper, Stack, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  CardMedia,
+  Chip,
+  InputAdornment,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL, API_SERVER_URL } from "../config/api";
@@ -18,6 +31,21 @@ const getHallPosterUrl = (poster) => {
   if (!poster) return FALLBACK_HALL_IMAGE;
   if (/^https?:\/\//i.test(poster)) return poster;
   return `${API_SERVER_URL}/uploads/${poster}`;
+};
+
+const hallCardSurface = {
+  borderRadius: 0,
+  border: "1px solid rgba(255,255,255,0.08)",
+  background:
+    "linear-gradient(180deg, rgba(24,24,27,0.96) 0%, rgba(14,14,16,0.98) 100%)",
+  color: "#fff",
+  boxShadow: "0 16px 48px rgba(0,0,0,0.24)",
+  transition: "transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease",
+  "&:hover": {
+    transform: "translateY(-4px)",
+    borderColor: "rgba(229,9,20,0.42)",
+    boxShadow: "0 20px 56px rgba(229,9,20,0.12)",
+  },
 };
 
 const Halls = () => {
@@ -109,6 +137,11 @@ const Halls = () => {
     setChatHall({ id: hall.id, name: hall.hall_name || "Cinema Hall" });
   };
 
+  const locationLabel =
+    selectedCity.trim().toLowerCase() === ALL_NEPAL_CITY.toLowerCase()
+      ? "Nepal-wide"
+      : selectedCity;
+
   return (
     <section className="py-10" id="locations">
       <div className="container mx-auto px-6">
@@ -141,7 +174,7 @@ const Halls = () => {
               <Chip
                 label={`${filteredHalls.length} / ${halls.length} halls`}
                 sx={{
-                  borderRadius: 999,
+                  borderRadius: 0,
                   color: "#fff",
                   fontWeight: 700,
                   border: "1px solid rgba(255,255,255,0.12)",
@@ -163,7 +196,7 @@ const Halls = () => {
                   </InputAdornment>
                 ),
                 sx: {
-                  borderRadius: 3,
+                  borderRadius: 0,
                   color: "#fff",
                   backgroundColor: "rgba(255,255,255,0.04)",
                   "& .MuiOutlinedInput-notchedOutline": {
@@ -180,7 +213,7 @@ const Halls = () => {
             />
 
             <Typography sx={{ fontSize: 12, color: "rgba(255,255,255,0.62)" }}>
-              Showing halls in: <Box component="span" sx={{ fontWeight: 700, color: "#fff" }}>{selectedCity}</Box>
+              Region: <Box component="span" sx={{ fontWeight: 700, color: "#fff" }}>{locationLabel}</Box>
             </Typography>
           </Stack>
         </Paper>
@@ -194,78 +227,150 @@ const Halls = () => {
             No halls match your search.
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", lg: "repeat(2, minmax(0, 1fr))" },
+              gap: 2.5,
+            }}
+          >
             {filteredHalls.map((hall, index) => (
               <motion.article
                 key={hall.id || index}
-                className="overflow-hidden rounded-2xl border border-white/10 bg-secondary transition-all duration-300 hover:-translate-y-1 hover:border-accent/60 hover:shadow-[0_12px_40px_rgba(229,9,20,0.16)]"
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.06, duration: 0.35 }}
               >
-                <div className="grid gap-4 p-4 md:grid-cols-[220px,1fr]">
-                  <img
-                    src={getHallPosterUrl(hall.hallPoster)}
-                    alt={hall.hall_name || "Hall"}
-                    className="h-52 w-full rounded-xl object-cover md:h-full"
-                  />
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-xl font-bold text-text-primary">
-                        {hall.hall_name || "Cinema Hall"}
-                      </h3>
-                      <span
-                        className={`rounded-full px-2 py-1 text-xs font-semibold ${
-                          hall.isActive
-                            ? "bg-emerald-500/15 text-emerald-500"
-                            : "bg-rose-500/15 text-rose-500"
-                        }`}
-                      >
-                        {hall.isActive ? "Active" : "Inactive"}
-                      </span>
-                    </div>
+                <Card sx={hallCardSurface}>
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: { xs: "1fr", sm: "160px minmax(0, 1fr)" },
+                      alignItems: "stretch",
+                    }}
+                  >
+                    <CardMedia
+                      component="img"
+                      image={getHallPosterUrl(hall.hallPoster)}
+                      alt={hall.hall_name || "Hall"}
+                      sx={{
+                        height: { xs: 150, sm: "100%" },
+                        minHeight: { sm: 170 },
+                        objectFit: "cover",
+                      }}
+                    />
 
-                    <p className="flex items-center gap-2 text-sm text-text-secondary">
-                      <MapPin size={15} className="text-accent" />
-                      {hall.hall_location || "Location unavailable"}
-                    </p>
+                    <Box sx={{ display: "flex", flexDirection: "column" }}>
+                      <CardContent sx={{ p: 2.25, pb: 1.25 }}>
+                        <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={1.5}>
+                          <Typography variant="h6" sx={{ fontWeight: 800, color: "#fff", fontSize: "1rem" }}>
+                            {hall.hall_name || "Cinema Hall"}
+                          </Typography>
+                          <Chip
+                            label={hall.isActive ? "Open" : "Closed"}
+                            size="small"
+                            sx={{
+                              borderRadius: 0,
+                              fontWeight: 700,
+                              color: hall.isActive ? "#6ee7b7" : "#fca5a5",
+                              border: `1px solid ${hall.isActive ? "rgba(110,231,183,0.28)" : "rgba(252,165,165,0.26)"}`,
+                              backgroundColor: hall.isActive
+                                ? "rgba(16,185,129,0.12)"
+                                : "rgba(239,68,68,0.12)",
+                            }}
+                          />
+                        </Stack>
 
-                    <div className="flex flex-wrap gap-2 text-xs">
-                      <span className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-primary/40 px-2.5 py-1 text-text-secondary">
-                        <Users size={13} />
-                        {hall.capacity || 0} Seats
-                      </span>
-                      <span className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-primary/40 px-2.5 py-1 text-text-secondary">
-                        <Phone size={13} />
-                        {hall.hall_contact || "No contact"}
-                      </span>
-                    </div>
+                        <Stack spacing={1.2} sx={{ mt: 1.5 }}>
+                          <Typography
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                              fontSize: 13,
+                              color: "rgba(255,255,255,0.72)",
+                            }}
+                          >
+                            <MapPin size={15} color="#e50914" />
+                            {hall.hall_location || "Location unavailable"}
+                          </Typography>
 
-                  
+                          <Stack direction="row" flexWrap="wrap" gap={1}>
+                            <Chip
+                              icon={<Users size={13} />}
+                              label={`${hall.capacity || 0} seats`}
+                              size="small"
+                              sx={{
+                                borderRadius: 0,
+                                color: "rgba(255,255,255,0.78)",
+                                border: "1px solid rgba(255,255,255,0.12)",
+                                backgroundColor: "rgba(255,255,255,0.04)",
+                                "& .MuiChip-icon": { color: "rgba(255,255,255,0.64)" },
+                              }}
+                            />
+                            <Chip
+                              icon={<Phone size={13} />}
+                              label={hall.hall_contact || "No contact"}
+                              size="small"
+                              sx={{
+                                borderRadius: 0,
+                                color: "rgba(255,255,255,0.78)",
+                                border: "1px solid rgba(255,255,255,0.12)",
+                                backgroundColor: "rgba(255,255,255,0.04)",
+                                "& .MuiChip-icon": { color: "rgba(255,255,255,0.64)" },
+                              }}
+                            />
+                          </Stack>
+                        </Stack>
+                      </CardContent>
 
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      <button
-                        type="button"
-                        onClick={() => navigate("/movies")}
-                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white hover:bg-accent-hover"
-                      >
-                        View Shows <ArrowRight size={15} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => openHallChat(hall)}
-                        className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/20 bg-primary/40 px-4 py-2.5 text-sm font-semibold text-text-primary hover:border-accent"
-                      >
-                        <MessageCircle size={15} />
-                        Chat with Hall
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                      <CardActions sx={{ px: 2.25, pb: 2.25, pt: 0, gap: 1.25, flexWrap: "wrap" }}>
+                        <Button
+                          type="button"
+                          onClick={() => navigate("/movies")}
+                          variant="contained"
+                          endIcon={<ArrowRight size={15} />}
+                          sx={{
+                            borderRadius: 0,
+                            px: 2,
+                            py: 1,
+                            backgroundColor: "#e50914",
+                            textTransform: "none",
+                            fontWeight: 700,
+                            "&:hover": { backgroundColor: "#c80811" },
+                          }}
+                        >
+                          View Shows
+                        </Button>
+                        <Button
+                          type="button"
+                          onClick={() => openHallChat(hall)}
+                          variant="outlined"
+                          startIcon={<MessageCircle size={15} />}
+                          sx={{
+                            borderRadius: 0,
+                            px: 2,
+                            py: 1,
+                            color: "#fff",
+                            borderColor: "rgba(255,255,255,0.2)",
+                            textTransform: "none",
+                            fontWeight: 700,
+                            "&:hover": {
+                              borderColor: "#e50914",
+                              backgroundColor: "rgba(229,9,20,0.08)",
+                            },
+                          }}
+                        >
+                          Chat
+                        </Button>
+                      </CardActions>
+                    </Box>
+                  </Box>
+                </Card>
               </motion.article>
             ))}
-          </div>
+          </Box>
         )}
       </div>
 
