@@ -7,7 +7,6 @@ import {
   Box,
   Button,
   Chip,
-  Container,
   Divider,
   IconButton,
   InputAdornment,
@@ -247,12 +246,13 @@ export default function HallAdminMessages() {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Box sx={{ width: "100%", height: "100%", p: { xs: 2, md: 3 } }}>
       <Paper
         elevation={0}
         sx={{
-          height: "calc(100vh - 110px)",
-          borderRadius: 3,
+          height: "100%",
+          minHeight: 0,
+          borderRadius: { xs: 2, md: 0 },
           border: "1px solid",
           borderColor: "divider",
           overflow: "hidden",
@@ -469,6 +469,6 @@ export default function HallAdminMessages() {
           </Box>
         </Box>
       </Paper>
-    </Container>
+    </Box>
   );
 }

@@ -116,7 +116,41 @@ const TOP_MOVIES = [
   },
 ];
 
+const COMING_SOON = [
+  {
+    title: "Midnight Atlas",
+    release: "Premieres This Friday",
+    summary: "A moody global thriller built for premium large-format screens.",
+    image: heroPoster,
+  },
+  {
+    title: "Second Summer",
+    release: "Early Access Next Week",
+    summary: "A warm coming-of-age romance with festival buzz and packed previews.",
+    image: sweaterPoster,
+  },
+  {
+    title: "The Last Frequency",
+    release: "Tickets Open Soon",
+    summary: "A tense sci-fi mystery with late-night screenings and fan events.",
+    image: roadPoster,
+  },
+];
 
+const PLATFORM_FEATURES = [
+  {
+    title: "Clear Showtimes",
+    detail: "Browse halls, rooms, and times without crowded booking flows or confusing seat states.",
+  },
+  {
+    title: "Reliable Booking",
+    detail: "Move from discovery to checkout quickly with organized movie pages and cleaner scheduling.",
+  },
+  {
+    title: "Trusted Halls",
+    detail: "Find verified venues, review locations, and compare sessions before you commit.",
+  },
+];
 
 const TESTIMONIALS = [
   {
@@ -450,10 +484,10 @@ export default function Landing() {
       <Container maxWidth="lg" sx={{ pb: { xs: 6, md: 8 } }}>
         <Paper sx={{ ...sectionSurface, p: { xs: 3, md: 4 } }}>
           <SectionHeading
-            eyebrow="Currently In Cinemas"
-            title="Discover what's playing right now"
-            description="Book seats for the hottest titles across Kathmandu, Pokhara, Lalitpur, and beyond."
-            actionLabel="View all movies"
+            eyebrow="Now Showing"
+            title="What audiences are booking today"
+            description="A sharper view of what is playing right now, with hand-picked titles that feel current and worth the trip."
+            actionLabel="Browse movies"
           />
           <Box
             sx={{
@@ -507,8 +541,55 @@ export default function Landing() {
             description="Get ready for premieres and reserve before tickets drop."
             actionLabel="Pre-register"
           />
-        
-         
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" },
+              gap: 3,
+            }}
+          >
+            {COMING_SOON.map((movie) => (
+              <Card key={movie.title} sx={{ ...cardSurface, minHeight: 420, overflow: "hidden" }}>
+                <CardMedia component="img" image={movie.image} alt={movie.title} sx={{ height: 250, objectFit: "cover" }} />
+                <CardContent sx={{ p: 3, flexGrow: 1 }}>
+                  <Chip
+                    label={movie.release}
+                    size="small"
+                    sx={{
+                      mb: 2,
+                      borderRadius: 0,
+                      color: "#fff",
+                      border: "1px solid rgba(229,9,20,0.4)",
+                      backgroundColor: "rgba(229,9,20,0.12)",
+                    }}
+                  />
+                  <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.2 }}>
+                    {movie.title}
+                  </Typography>
+                  <Typography sx={{ color: "rgba(255,255,255,0.7)", lineHeight: 1.8 }}>
+                    {movie.summary}
+                  </Typography>
+                </CardContent>
+                <CardActions sx={{ px: 3, pb: 3, pt: 0 }}>
+                  <Button
+                    component={RouterLink}
+                    to="/movies"
+                    variant="outlined"
+                    endIcon={<ArrowRight size={16} />}
+                    sx={{
+                      borderRadius: 0,
+                      color: "#fff",
+                      borderColor: "rgba(255,255,255,0.2)",
+                      textTransform: "none",
+                      fontWeight: 700,
+                    }}
+                  >
+                    Track release
+                  </Button>
+                </CardActions>
+              </Card>
+            ))}
+          </Box>
         </Paper>
       </Container>
 
@@ -529,9 +610,84 @@ export default function Landing() {
               alignItems: "center",
             }}
           >
-         
+            <Box>
+              <Typography
+                variant="overline"
+                sx={{ color: "rgba(255,255,255,0.58)", letterSpacing: "0.34em" }}
+              >
+                Why CinemaHub
+              </Typography>
+              <Typography variant="h3" sx={{ mt: 1, fontWeight: 900, lineHeight: 1.15 }}>
+                A more professional way to discover cinemas, movies, and showtimes
+              </Typography>
+              <Typography sx={{ mt: 2, color: "rgba(255,255,255,0.72)", lineHeight: 1.9, maxWidth: 620 }}>
+                Built for moviegoers who want less clutter and more confidence. CinemaHub helps you compare halls,
+                find the right session faster, and book with a cleaner flow from landing page to ticket confirmation.
+              </Typography>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 3 }}>
+                <Button
+                  component={RouterLink}
+                  to="/movies"
+                  variant="contained"
+                  endIcon={<ArrowRight size={16} />}
+                  sx={{
+                    borderRadius: 0,
+                    px: 3,
+                    py: 1.4,
+                    backgroundColor: "#e50914",
+                    textTransform: "none",
+                    fontWeight: 800,
+                    "&:hover": { backgroundColor: "#c80811" },
+                  }}
+                >
+                  Explore Movies
+                </Button>
+                <Button
+                  component={RouterLink}
+                  to="/locations"
+                  variant="outlined"
+                  sx={{
+                    borderRadius: 0,
+                    px: 3,
+                    py: 1.4,
+                    color: "#fff",
+                    borderColor: "rgba(255,255,255,0.22)",
+                    textTransform: "none",
+                    fontWeight: 700,
+                  }}
+                >
+                  View Locations
+                </Button>
+              </Stack>
+            </Box>
 
-           
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: "1fr",
+                gap: 2,
+              }}
+            >
+              {PLATFORM_FEATURES.map((item, index) => (
+                <Paper
+                  key={item.title}
+                  sx={{
+                    p: 2.5,
+                    borderRadius: 0,
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    backgroundColor: index === 0 ? "rgba(229,9,20,0.12)" : "rgba(255,255,255,0.04)",
+                    color: "#fff",
+                  }}
+                >
+                  <Typography variant="h6" sx={{ fontWeight: 800, mb: 0.8 }}>
+                    {item.title}
+                  </Typography>
+                  <Typography sx={{ color: "rgba(255,255,255,0.7)", lineHeight: 1.75 }}>
+                    {item.detail}
+                  </Typography>
+                </Paper>
+              ))}
+            </Box>
           </Box>
         </Paper>
       </Container>
@@ -623,6 +779,36 @@ export default function Landing() {
           <Typography sx={{ mt: 1.5, color: "rgba(255,255,255,0.68)" }}>
             Subscribe for early seat drops, reminder texts, and exclusive invites.
           </Typography>
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={1.5}
+            justifyContent="center"
+            sx={{ mt: 3 }}
+          >
+            {APP_BADGES.map((badge) => (
+              <Paper
+                key={badge.label}
+                sx={{
+                  px: 2.5,
+                  py: 1.4,
+                  borderRadius: 0,
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  backgroundColor: "rgba(255,255,255,0.04)",
+                  color: "#fff",
+                }}
+              >
+                <Stack direction="row" spacing={1.2} alignItems="center">
+                  <Download size={16} />
+                  <Box textAlign="left">
+                    <Typography sx={{ fontWeight: 700, lineHeight: 1.1 }}>{badge.label}</Typography>
+                    <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.62)" }}>
+                      {badge.detail}
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Paper>
+            ))}
+          </Stack>
           <Divider sx={{ my: 3, borderColor: "rgba(255,255,255,0.08)" }} />
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
             <TextField

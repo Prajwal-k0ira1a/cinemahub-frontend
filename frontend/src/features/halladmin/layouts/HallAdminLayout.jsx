@@ -8,6 +8,7 @@ const HallAdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, loading, logout, user } = useContext(AuthContext);
+  const isMessagesPage = location.pathname === "/halladmin/messages";
 
   const theme = useMemo(
     () =>
@@ -77,8 +78,7 @@ const HallAdminLayout = () => {
           </div>
 
           <nav className="flex flex-col gap-2 p-4">
-            <Link
-              to="/halladmin"
+            <Link to="/halladmin"
               className={`flex items-center gap-3 rounded-lg px-4 py-3 transition-colors ${isActive(
                 "/halladmin",
               )}`}
@@ -144,8 +144,14 @@ const HallAdminLayout = () => {
           </div>
         </aside>
 
-        <main className="flex-1 overflow-y-auto bg-secondary">
-          <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-6">
+        <main className={`flex-1 bg-secondary ${isMessagesPage ? "overflow-hidden" : "overflow-y-auto"}`}>
+          <div
+            className={
+              isMessagesPage
+                ? "flex h-full w-full flex-col"
+                : "mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-6"
+            }
+          >
             <Outlet />
           </div>
         </main>

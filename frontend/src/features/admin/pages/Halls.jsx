@@ -4,7 +4,6 @@ import {
   Box,
   Button,
   Card,
-  CardActions,
   CardContent,
   CardMedia,
   Chip,
@@ -62,8 +61,34 @@ const emptyForm = {
 
 const seatKey = (rowIndex, seatIndex) => `${rowIndex}-${seatIndex}`;
 
+const getRoomsFromHallPayload = (hall) => {
+  if (Array.isArray(hall?.Hallrooms)) return hall.Hallrooms;
+  if (Array.isArray(hall?.hallrooms)) return hall.hallrooms;
+  return [];
+};
+
+const getRoomCapacity = (room) => {
+  const rows = Number(room?.rows ?? room?.totalRows ?? 0) || 0;
+  const seatsPerRow = Number(room?.seatsPerRow ?? room?.columns ?? room?.totalColumns ?? 0) || 0;
+  const blockedSeats = Array.isArray(room?.emptySeats) ? room.emptySeats.length : 0;
+  return Math.max(rows * seatsPerRow - blockedSeats, 0);
+};
+
+const normalizeRoomList = (hallrooms = []) => {
+  if (!hallrooms.length) return [createRoom()];
+
+  return hallrooms.map((room) => ({
+    roomName: room?.roomName || room?.name || "",
+    rows: Number(room?.rows ?? room?.totalRows ?? 5) || 5,
+    seatsPerRow: Number(room?.seatsPerRow ?? room?.columns ?? room?.totalColumns ?? 10) || 10,
+    emptySeats: Array.isArray(room?.emptySeats) ? room.emptySeats : [],
+    seatTypes: room?.seatTypes && typeof room.seatTypes === "object" ? room.seatTypes : {},
+  }));
+};
+
 const Halls = () => {
   const [halls, setHalls] = useState([]);
+  const [hallRooms, setHallRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -91,11 +116,21 @@ const Halls = () => {
   const fetchHalls = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_BASE_URL}/hall/get-Active`, {
-        withCredentials: true,
-      });
-      if (response.data.success) {
-        setHalls(response.data.data);
+      const [hallsResponse, hallRoomsResponse] = await Promise.all([
+        axios.get(`${API_BASE_URL}/hall/get-Active`, {
+          withCredentials: true,
+        }),
+        axios.get(`${API_BASE_URL}/hall-room/get`, {
+          withCredentials: true,
+        }),
+      ]);
+
+      if (hallsResponse.data.success) {
+        setHalls(hallsResponse.data.data);
+      }
+
+      if (hallRoomsResponse.data?.success) {
+        setHallRooms(hallRoomsResponse.data.data || []);
       }
     } catch {
       toast.error("Failed to fetch halls");
@@ -139,7 +174,14 @@ const Halls = () => {
   };
 
   const validateStep = () => {
-    if (editingHall) return true;
+    if (editingHall) {
+      if (step === 0) {
+        return formData.hall_name.trim() && formData.hall_contact.trim() && formData.license.trim();
+      }
+      if (step === 1) return formData.hall_location.trim();
+      return true;
+    }
+
     if (step === 0) {
       return formData.hall_name.trim() && formData.hall_contact.trim() && formData.license.trim();
     }
@@ -149,8 +191,13 @@ const Halls = () => {
     return true;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
+    const lastStep = editingHall ? 1 : steps.length - 1;
+
+    if (step < lastStep) {
+      return;
+    }
+
     setError("");
     const data = new FormData();
     data.append("hall_name", formData.hall_name);
@@ -158,11 +205,6 @@ const Halls = () => {
     data.append("hall_contact", formData.hall_contact);
     data.append("license", formData.license);
     if (formData.hallPoster) data.append("hallPoster", formData.hallPoster);
-
-    if (!editingHall) {
-      data.append("hallrooms", JSON.stringify(rooms));
-      data.append("totalCapacity", String(totalCapacity));
-    }
 
     try {
       if (editingHall) {
@@ -172,14 +214,15 @@ const Halls = () => {
         });
         toast.success("Hall updated successfully");
       } else {
+        data.append("hallrooms", JSON.stringify(rooms));
+        data.append("totalCapacity", String(totalCapacity));
         await axios.post(`${API_BASE_URL}/hall/register`, data, {
           withCredentials: true,
           headers: { "Content-Type": "multipart/form-data" },
         });
         toast.success("Hall registered successfully");
       }
-      setShowModal(false);
-      resetForm();
+      closeModal();
       fetchHalls();
     } catch (err) {
       console.error("Hall register/update failed:", err.response?.data || err.message);
@@ -229,6 +272,27 @@ const Halls = () => {
     resetForm();
     setStep(0);
     setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    resetForm();
+  };
+
+  const getHallMeta = (hall) => {
+    const roomsFromHall = getRoomsFromHallPayload(hall);
+    const roomsFromEndpoint = hallRooms.filter((room) => {
+      const roomHallId = room?.Hall?.id ?? room?.hallId ?? room?.HallId;
+      return String(roomHallId) === String(hall?.id);
+    });
+    const resolvedRooms = roomsFromEndpoint.length ? roomsFromEndpoint : roomsFromHall;
+    const derivedSeatCount = resolvedRooms.reduce((sum, room) => sum + getRoomCapacity(room), 0);
+
+    return {
+      roomCount: resolvedRooms.length || Number(hall?.roomsCount) || 0,
+      seatCount: derivedSeatCount || Number(hall?.capacity ?? hall?.totalCapacity) || 0,
+      status: hall?.isActive ? "Active" : "Inactive",
+    };
   };
 
   const openEditModal = (hall) => {
@@ -296,95 +360,196 @@ const Halls = () => {
           </Box>
         ) : (
           <Grid container spacing={1.5}>
-            {filteredHalls.map((hall) => (
-              <Grid item xs={12} sm={6} md={4} key={hall.id}>
-                <Card variant="outlined" sx={{ height: "100%", display: "flex", flexDirection: "column", borderRadius: 2 }}>
-                  {hall.hallPoster ? (
-                    <CardMedia component="img" height="130" image={getPosterUrl(hall.hallPoster)} alt={hall.hall_name} />
-                  ) : (
-                    <Box sx={{ height: 130, display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "background.default" }}>
-                      <MapPin size={32} />
-                    </Box>
-                  )}
-                  <CardContent sx={{ flex: 1, py: 1.5, px: 2 }}>
-                    <Stack direction="row" alignItems="center" spacing={1} justifyContent="space-between" mb={0.5}>
-                      <Typography variant="h6" fontWeight={700}>{hall.hall_name}</Typography>
-                      <Chip
-                        label={hall.isActive ? "Active" : "Inactive"}
-                        color={hall.isActive ? "success" : "warning"}
-                        size="small"
-                        variant="outlined"
-                      />
-                    </Stack>
-                    <Stack spacing={0.75} color="text.secondary">
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <MapPin size={16} />
-                        <Typography variant="body2" noWrap title={hall.hall_location}>{hall.hall_location}</Typography>
-                      </Stack>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <Phone size={16} />
-                        <Typography variant="body2">{hall.hall_contact}</Typography>
-                      </Stack>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <Users size={16} />
-                        <Typography variant="body2">{hall.capacity ?? "-"} Seats</Typography>
-                      </Stack>
-                    </Stack>
-                  </CardContent>
-                  <CardActions sx={{ justifyContent: "space-between", px: 2, pb: 1.5 }}>
-                    <Stack direction="row" spacing={0.75}>
-                      <Button size="small" variant="outlined" startIcon={<Edit2 size={14} />} onClick={() => openEditModal(hall)} sx={{ borderRadius: 1.5, px: 1.5 }}>
-                        Edit
-                      </Button>
-                      {hall.isActive ? (
-                        <Button size="small" color="error" startIcon={<Trash2 size={14} />} onClick={() => handleDelete(hall.id)} sx={{ borderRadius: 1.5, px: 1.5 }}>
-                          Deactivate
-                        </Button>
+            {filteredHalls.map((hall) => {
+              const meta = getHallMeta(hall);
+              return (
+                <Grid size={12} key={hall.id}>
+                  <Card
+                    variant="outlined"
+                    sx={{
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "row",
+                      borderRadius: 1.5,
+                      overflow: "hidden",
+                      bgcolor: "rgba(255,255,255,0.015)",
+                      borderColor: "rgba(255,255,255,0.1)",
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        position: "relative",
+                        width: { xs: 120, sm: 150 },
+                        minWidth: { xs: 120, sm: 150 },
+                        flexShrink: 0,
+                      }}
+                    >
+                      {hall.hallPoster ? (
+                        <CardMedia
+                          component="img"
+                          image={getPosterUrl(hall.hallPoster)}
+                          alt={hall.hall_name}
+                          sx={{
+                            height: "100%",
+                            minHeight: 220,
+                            objectFit: "cover",
+                          }}
+                        />
                       ) : (
-                        <Button size="small" color="success" startIcon={<CheckCircle2 size={14} />} onClick={() => handleActivate(hall)} sx={{ borderRadius: 1.5, px: 1.5 }}>
-                          Activate
-                        </Button>
+                        <Box
+                          sx={{
+                            height: "100%",
+                            minHeight: 220,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            bgcolor: "background.default",
+                          }}
+                        >
+                          <MapPin size={36} />
+                        </Box>
                       )}
-                    </Stack>
-                  </CardActions>
-                </Card>
-              </Grid>
-            ))}
+
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          inset: 0,
+                          background: "linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.82) 100%)",
+                        }}
+                      />
+
+                      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={1} sx={{ position: "absolute", inset: 0, p: 1 }}>
+                        <Chip
+                          label={meta.status}
+                          color={hall.isActive ? "success" : "warning"}
+                          size="small"
+                          variant={hall.isActive ? "filled" : "outlined"}
+                          sx={{ height: 22, fontSize: 11 }}
+                        />
+                        <Chip
+                          label={`${meta.roomCount} room${meta.roomCount === 1 ? "" : "s"}`}
+                          size="small"
+                          variant="outlined"
+                          sx={{ height: 22, fontSize: 11, bgcolor: "rgba(0,0,0,0.3)" }}
+                        />
+                      </Stack>
+
+                      <Box sx={{ position: "absolute", left: 0, right: 0, bottom: 0, p: 1.25 }}>
+                        <Typography variant="subtitle1" fontWeight={800} sx={{ lineHeight: 1.15 }}>
+                          {hall.hall_name}
+                        </Typography>
+                        <Typography variant="caption" color="rgba(255,255,255,0.72)" sx={{ mt: 0.35, display: "block" }}>
+                          {hall.license || "License pending"}
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    <CardContent sx={{ flex: 1, p: 1.75, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                      <Stack spacing={1.5}>
+                        <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                          <Chip
+                            icon={<Users size={14} />}
+                            label={`${meta.seatCount || 0} seats`}
+                            size="small"
+                            variant="outlined"
+                            sx={{ borderRadius: 1 }}
+                          />
+                          <Chip
+                            label={`${meta.roomCount} room${meta.roomCount === 1 ? "" : "s"}`}
+                            size="small"
+                            variant="outlined"
+                            sx={{ borderRadius: 1 }}
+                          />
+                        </Stack>
+
+                        <Stack spacing={1.1}>
+                          <Stack direction="row" spacing={1.1} alignItems="flex-start">
+                            <MapPin size={15} />
+                            <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.55 }}>
+                              {hall.hall_location || "Location unavailable"}
+                            </Typography>
+                          </Stack>
+                          <Stack direction="row" spacing={1.1} alignItems="center">
+                            <Phone size={15} />
+                            <Typography variant="body2" color="text.secondary">
+                              {hall.hall_contact || "N/A"}
+                            </Typography>
+                          </Stack>
+                        </Stack>
+                      </Stack>
+
+                      <Divider sx={{ my: 1.5 }} />
+
+                      <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ width: "100%" }}>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          startIcon={<Edit2 size={14} />}
+                          onClick={() => openEditModal(hall)}
+                          sx={{ px: 1.5, flex: 1, borderRadius: 1 }}
+                        >
+                          Edit Hall
+                        </Button>
+                        {hall.isActive ? (
+                          <Button
+                            size="small"
+                            color="error"
+                            variant="outlined"
+                            startIcon={<Trash2 size={14} />}
+                            onClick={() => handleDelete(hall.id)}
+                            sx={{ px: 1.5, flex: 1, borderRadius: 1 }}
+                          >
+                            Deactivate
+                          </Button>
+                        ) : (
+                          <Button
+                            size="small"
+                            color="success"
+                            variant="outlined"
+                            startIcon={<CheckCircle2 size={14} />}
+                            onClick={() => handleActivate(hall)}
+                            sx={{ px: 1.5, flex: 1, borderRadius: 1 }}
+                          >
+                            Activate
+                          </Button>
+                        )}
+                      </Stack>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              );
+            })}
           </Grid>
         )}
       </Paper>
 
-      <Dialog open={showModal} onClose={() => setShowModal(false)} fullWidth maxWidth="lg">
+      <Dialog open={showModal} onClose={closeModal} fullWidth maxWidth="lg">
         <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <Box>
             <Typography variant="h6" fontWeight={700}>{editingHall ? "Edit Hall" : "Add New Hall"}</Typography>
-            {!editingHall && (
-              <Typography variant="body2" color="text.secondary">
-                Step {step + 1} of {steps.length}
-              </Typography>
-            )}
+            <Typography variant="body2" color="text.secondary">
+              Step {step + 1} of {editingHall ? 2 : steps.length}
+            </Typography>
           </Box>
-          <IconButton onClick={() => setShowModal(false)}>
+          <IconButton onClick={closeModal}>
             <X size={20} />
           </IconButton>
         </DialogTitle>
         <Divider />
         {error && <Alert severity="error" sx={{ mx: 3, mt: 2 }}>{error}</Alert>}
         <DialogContent dividers sx={{ pt: 3 }}>
-          {!editingHall && (
-            <Stepper activeStep={step} alternativeLabel sx={{ mb: 3 }}>
-              {steps.map((label) => (
-                <Step key={label}>
-                  <StepLabel>{label}</StepLabel>
-                </Step>
-              ))}
-            </Stepper>
-          )}
+          <Stepper activeStep={step} alternativeLabel sx={{ mb: 3 }}>
+            {(editingHall ? steps.slice(0, 2) : steps).map((label) => (
+              <Step key={label}>
+                <StepLabel>{label}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
 
-          <form id="hall-form" onSubmit={handleSubmit}>
-            {(editingHall || step === 0) && (
+          <form id="hall-form" onSubmit={(e) => e.preventDefault()}>
+            {step === 0 && (
               <Grid container spacing={2} sx={{ mb: 3 }}>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     label="Hall Name"
                     name="hall_name"
@@ -394,7 +559,7 @@ const Halls = () => {
                     required
                   />
                 </Grid>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     label="Contact"
                     name="hall_contact"
@@ -404,7 +569,7 @@ const Halls = () => {
                     required
                   />
                 </Grid>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     label="License Number"
                     name="license"
@@ -414,7 +579,7 @@ const Halls = () => {
                     required
                   />
                 </Grid>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Button
                     variant="outlined"
                     component="label"
@@ -440,7 +605,7 @@ const Halls = () => {
               </Grid>
             )}
 
-            {(editingHall || step === 1) && (
+            {step === 1 && (
               <Box sx={{ mb: 3 }}>
                 <TextField
                   label="Hall Location"
@@ -471,7 +636,7 @@ const Halls = () => {
                   {rooms.map((room, idx) => (
                     <Paper key={idx} variant="outlined" sx={{ p: 2 }}>
                       <Grid container spacing={2}>
-                        <Grid item xs={12} md={4}>
+                        <Grid size={{ xs: 12, md: 4 }}>
                           <TextField
                             label="Room Name"
                             value={room.roomName}
@@ -479,7 +644,7 @@ const Halls = () => {
                             fullWidth
                           />
                         </Grid>
-                        <Grid item xs={6} md={4}>
+                        <Grid size={{ xs: 6, md: 4 }}>
                           <TextField
                             label="Rows"
                             type="number"
@@ -494,7 +659,7 @@ const Halls = () => {
                             fullWidth
                           />
                         </Grid>
-                        <Grid item xs={6} md={4}>
+                        <Grid size={{ xs: 6, md: 4 }}>
                           <TextField
                             label="Seats per Row"
                             type="number"
@@ -604,14 +769,16 @@ const Halls = () => {
           </form>
         </DialogContent>
         <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button onClick={() => setShowModal(false)} color="inherit">Cancel</Button>
-          {!editingHall && step > 0 && (
-            <Button variant="outlined" onClick={() => setStep((s) => Math.max(0, s - 1))}>
+          <Button type="button" onClick={closeModal} color="inherit">Cancel</Button>
+          {step > 0 && (
+            <Button type="button" variant="outlined" onClick={() => setStep((s) => Math.max(0, s - 1))}>
               Back
             </Button>
           )}
-          {!editingHall && step < steps.length - 1 ? (
+          {step < (editingHall ? 1 : steps.length - 1) ? (
             <Button
+              key="next-step"
+              type="button"
               variant="contained"
               onClick={() => {
                 if (!validateStep()) return;
@@ -621,7 +788,12 @@ const Halls = () => {
               Next
             </Button>
           ) : (
-            <Button type="submit" variant="contained" form="hall-form">
+            <Button
+              key="submit-hall"
+              type="button"
+              variant="contained"
+              onClick={handleSubmit}
+            >
               {editingHall ? "Update Hall" : "Create Hall"}
             </Button>
           )}

@@ -1,190 +1,207 @@
-import React from "react";
-import { Box, Card, CardContent, CardHeader, Container, Divider, LinearProgress, Stack, Typography,Grid } from "@mui/material";
-import { Film, MapPin, Ticket, Users } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import axios from "axios";
+import { Building2, Clock3, Film, FileCheck2, MapPin, Users } from "lucide-react";
+import { API_BASE_URL } from "../../../shared/config/api.js";
 
-const SparkLine = ({ data, height = 48, stroke = "#e50914", fill = "rgba(229,9,20,0.12)" }) => {
-  if (!data || data.length === 0) return null;
-  const max = Math.max(...data);
-  const min = Math.min(...data);
-  const range = max - min || 1;
-  const width = 140;
-  const points = data
-    .map((d, i) => {
-      const x = (i / (data.length - 1)) * width;
-      const y = height - ((d - min) / range) * height;
-      return `${x},${y}`;
-    })
-    .join(" ");
-  return (
-    <svg width={width} height={height} role="img" aria-label="sparkline">
-      <polygon
-        points={`0,${height} ${points} ${width},${height}`}
-        fill={fill}
-        stroke="none"
-      />
-      <polyline
-        points={points}
-        fill="none"
-        stroke={stroke}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-};
-
-const StatCard = ({ title, value, delta, icon, color }) => (
-  <Card
-    variant="outlined"
-    sx={{
-      flex: "1 1 220px",
-      minWidth: 0,
-      borderRadius: 2,
-      height: "100%",
-      borderColor: color || "rgba(255,255,255,0.08)",
-    }}
-  >
-    <CardContent
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: 1.5,
-      }}
-    >
-      <Box>
-        <Typography variant="overline" color="text.secondary">
-          {title}
-        </Typography>
-        <Typography variant="h5" fontWeight={700} sx={{ mt: 0.5 }}>
-          {value}
-        </Typography>
-        {delta !== undefined && (
-          <Typography variant="caption" color={delta >= 0 ? "success.main" : "error.main"}>
-            {delta >= 0 ? "+" : ""}
-            {delta}% vs last week
-          </Typography>
-        )}
-      </Box>
-      <Box
-        sx={{
-          width: 44,
-          height: 44,
-          borderRadius: 1.5,
-          bgcolor: color || "rgba(255,255,255,0.04)",
-          display: "grid",
-          placeItems: "center",
-          border: "1px solid rgba(255,255,255,0.06)",
-        }}
-      >
-        {icon}
-      </Box>
-    </CardContent>
-  </Card>
+const StatCard = ({ title, value, icon: Icon, color }) => (
+  <div className="h-full rounded-2xl border border-white/10 bg-black p-6">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{title}</p>
+        <p className="mt-2 text-3xl font-bold text-white">{value}</p>
+      </div>
+      <div className={`rounded-lg border border-white/10 bg-white/5 p-3 ${color}`}>
+        <Icon size={22} className="text-white" />
+      </div>
+    </div>
+  </div>
 );
 
+const formatDateTime = (value) => {
+  if (!value) return "Not available";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+const normalizeApplication = (application) => ({
+  id: application?.id || "-",
+  hallName: application?.hall_name || application?.hallName || "Untitled hall",
+  ownerName: application?.owner_name || application?.ownerName || application?.fullname || "Unknown owner",
+  email: application?.email || "No email",
+  location: application?.hall_location || application?.hallLocation || "Location unavailable",
+  status: application?.status || "pending",
+  createdAt: formatDateTime(application?.createdAt || application?.created_at),
+  createdAtValue: application?.createdAt || application?.created_at || "",
+});
+
 const Dashboard = () => {
-  // Static placeholders; wire to real metrics when available.
-  const stats = [
-    { title: "Total Movies", value: "24", delta: 3, icon: <Film size={18} />, color: "rgba(229,9,20,0.35)" },
-    { title: "Active Halls", value: "12", delta: 0, icon: <MapPin size={18} />, color: "rgba(16,185,129,0.35)" },
-    { title: "Total Users", value: "1,234", delta: 4, icon: <Users size={18} />, color: "rgba(59,130,246,0.35)" },
-    { title: "Tickets Sold", value: "856", delta: -2, icon: <Ticket size={18} />, color: "rgba(255,159,64,0.35)" },
+  const [moviesCount, setMoviesCount] = useState(0);
+  const [hallsCount, setHallsCount] = useState(0);
+  const [showtimesCount, setShowtimesCount] = useState(0);
+  const [usersCount, setUsersCount] = useState(0);
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [applicationsLoading, setApplicationsLoading] = useState(true);
+  const [applicationsError, setApplicationsError] = useState("");
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const token = localStorage.getItem("token") || localStorage.getItem("authToken");
+        const userHeaders = token ? { Authorization: `Bearer ${token}` } : undefined;
+
+        const [movieRes, hallRes, showtimeRes, userRes, applicationRes] = await Promise.all([
+          axios.get(`${API_BASE_URL}/movie/get`, { withCredentials: true }),
+          axios.get(`${API_BASE_URL}/hall/get`, { withCredentials: true }),
+          axios.get(`${API_BASE_URL}/showtime/get`, { withCredentials: true }),
+          fetch(`${API_BASE_URL}/user/get`, {
+            credentials: "include",
+            headers: userHeaders,
+          }),
+          axios.get(`${API_BASE_URL}/hall/applications`, { withCredentials: true }),
+        ]);
+
+        if (movieRes.data?.success) setMoviesCount(movieRes.data.data?.length || 0);
+        if (hallRes.data?.success) setHallsCount(hallRes.data.data?.length || 0);
+        if (showtimeRes.data?.success) setShowtimesCount(showtimeRes.data.data?.length || 0);
+
+        if (userRes.ok) {
+          const userPayload = await userRes.json();
+          if (userPayload?.success) {
+            setUsersCount(Array.isArray(userPayload.data) ? userPayload.data.length : 0);
+          }
+        }
+
+        setApplications(Array.isArray(applicationRes.data) ? applicationRes.data : []);
+        setApplicationsError("");
+      } catch {
+        setMoviesCount(0);
+        setHallsCount(0);
+        setShowtimesCount(0);
+        setUsersCount(0);
+        setApplications([]);
+        setApplicationsError("Applications could not be loaded.");
+      } finally {
+        setLoading(false);
+        setApplicationsLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  const normalizedApplications = useMemo(
+    () =>
+      applications
+        .map(normalizeApplication)
+        .sort((a, b) => new Date(b.createdAtValue).getTime() - new Date(a.createdAtValue).getTime())
+        .slice(0, 8),
+    [applications],
+  );
+
+  const pendingApplications = useMemo(
+    () => applications.filter((application) => String(application?.status || "").toLowerCase() === "pending").length,
+    [applications],
+  );
+
+  const statCards = [
+    { title: "Total Movies", value: loading ? "..." : moviesCount, icon: Film, color: "bg-blue-500/20" },
+    { title: "Active Halls", value: loading ? "..." : hallsCount, icon: Building2, color: "bg-emerald-500/20" },
+    { title: "Scheduled Shows", value: loading ? "..." : showtimesCount, icon: Clock3, color: "bg-amber-500/20" },
+    { title: "Registered Users", value: loading ? "..." : usersCount, icon: Users, color: "bg-violet-500/20" },
+    { title: "Applications", value: applicationsLoading ? "..." : applications.length, icon: FileCheck2, color: "bg-cyan-500/20" },
+    { title: "Pending Review", value: applicationsLoading ? "..." : pendingApplications, icon: MapPin, color: "bg-rose-500/20" },
   ];
 
-  const revenueSeries = [42, 48, 51, 58, 63, 70, 66];
-  const ticketsSeries = [120, 132, 140, 160, 155, 168, 180];
-
   return (
-    <Container maxWidth="lg" sx={{ px: 0 }}>
-      <Stack spacing={3}>
-        <Box>
-          <Typography variant="h4" fontWeight={700}>
-            Dashboard Overview
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            Use Form Applications to review hall registrations; manage movies, halls, and showtimes from the side menu.
-          </Typography>
-        </Box>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
+        <p className="mt-2 text-slate-400">
+          Monitor the full CinemaHub system and review operational activity from one workspace.
+        </p>
+      </div>
 
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={2} flexWrap="wrap" useFlexGap>
-          {stats.map((stat) => (
-            <StatCard key={stat.title} {...stat} />
-          ))}
-        </Stack>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {statCards.map((card) => (
+          <div key={card.title}>
+            <StatCard {...card} />
+          </div>
+        ))}
+      </div>
 
-        <Card variant="outlined" sx={{ borderRadius: 2 }}>
-          <CardHeader
-            title={<Typography variant="h6" fontWeight={700}>At a glance</Typography>}
-            subheader={<Typography variant="body2" color="text.secondary">Recent activity snapshot</Typography>}
-          />
-          <Divider />
-          <CardContent>
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
-                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Weekly Revenue (k USD)
-                    </Typography>
-                    <Typography variant="h6" fontWeight={700}>$70k</Typography>
-                    <Typography variant="caption" color="success.main">+8% vs last week</Typography>
-                  </Box>
-                  <SparkLine data={revenueSeries} />
-                </Stack>
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Seat occupancy (this week)
-                  </Typography>
-                  <LinearProgress
-                    variant="determinate"
-                    value={72}
-                    sx={{
-                      height: 10,
-                      borderRadius: 5,
-                      "& .MuiLinearProgress-bar": { backgroundColor: "primary.main" },
-                    }}
-                  />
-                  <Typography variant="caption" color="text.secondary">
-                    72% average load across showtimes
-                  </Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Tickets Sold (weekly)
-                    </Typography>
-                    <Typography variant="h6" fontWeight={700}>180</Typography>
-                    <Typography variant="caption" color="success.main">+12% vs last week</Typography>
-                  </Box>
-                  <SparkLine data={ticketsSeries} stroke="#10b981" fill="rgba(16,185,129,0.12)" />
-                </Stack>
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Application review progress
-                  </Typography>
-                  <Stack spacing={1}>
-                    <Stack direction="row" justifyContent="space-between">
-                      <Typography variant="caption">Pending</Typography>
-                      <Typography variant="caption">8</Typography>
-                    </Stack>
-                    <LinearProgress variant="determinate" value={35} sx={{ height: 8, borderRadius: 4 }} />
-                    <Stack direction="row" justifyContent="space-between">
-                      <Typography variant="caption">Approved</Typography>
-                      <Typography variant="caption">18</Typography>
-                    </Stack>
-                    <LinearProgress variant="determinate" value={65} sx={{ height: 8, borderRadius: 4 }} />
-                  </Stack>
-                </Box>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-      </Stack>
-    </Container>
+      <section className="rounded-2xl border border-white/10 bg-black p-6">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-white">Recent Hall Applications</h2>
+            <p className="text-sm text-slate-400">
+              Review the latest hall onboarding requests and their current status.
+            </p>
+          </div>
+          <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-300">
+            {applicationsLoading ? "Loading applications..." : `${applications.length} total applications`}
+          </div>
+        </div>
+
+        {applicationsError ? (
+          <div className="mt-6 rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+            {applicationsError}
+          </div>
+        ) : applicationsLoading ? (
+          <div className="mt-6 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-8 text-center text-sm text-slate-300">
+            Loading application records...
+          </div>
+        ) : normalizedApplications.length === 0 ? (
+          <div className="mt-6 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-8 text-center text-sm text-slate-300">
+            No applications found yet.
+          </div>
+        ) : (
+          <div className="mt-6 overflow-x-auto">
+            <table className="min-w-full divide-y divide-white/10 text-left">
+              <thead>
+                <tr className="text-xs uppercase tracking-wide text-slate-400">
+                  <th className="px-4 py-3 font-semibold">Application</th>
+                  <th className="px-4 py-3 font-semibold">Owner</th>
+                  <th className="px-4 py-3 font-semibold">Hall</th>
+                  <th className="px-4 py-3 font-semibold">Location</th>
+                  <th className="px-4 py-3 font-semibold">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {normalizedApplications.map((application) => (
+                  <tr key={application.id} className="align-top text-sm text-slate-200">
+                    <td className="px-4 py-4">
+                      <p className="font-semibold text-white">#{application.id}</p>
+                      <p className="mt-1 text-xs text-slate-400">{application.createdAt}</p>
+                    </td>
+                    <td className="px-4 py-4">
+                      <p className="font-medium text-white">{application.ownerName}</p>
+                      <p className="mt-1 text-xs text-slate-400">{application.email}</p>
+                    </td>
+                    <td className="px-4 py-4">
+                      <p className="font-medium text-white">{application.hallName}</p>
+                    </td>
+                    <td className="px-4 py-4 text-slate-300">{application.location}</td>
+                    <td className="px-4 py-4">
+                      <span className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold capitalize text-slate-200">
+                        {application.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+    </div>
   );
 };
 

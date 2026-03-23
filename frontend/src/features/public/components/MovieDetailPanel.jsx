@@ -15,10 +15,11 @@ import {
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import {
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Clock3,
   MapPin,
+  MessageSquare,
   Play,
   X,
 } from "lucide-react";
@@ -48,6 +49,7 @@ export default function MovieDetailPanel({
   activeDate,
   onDateChange,
   onOpenBooking,
+  onOpenChat,
   formatDuration,
   getPosterUrl,
   getCastImageUrl,
@@ -66,8 +68,6 @@ export default function MovieDetailPanel({
   const firstShowtimeId = groupedByHallroom?.[0]?.times?.[0]?.id;
   const selectedDateKey = activeDate || uniqueDates[0] || "";
   const selectedDateIndex = Math.max(0, uniqueDates.findIndex((dateKey) => dateKey === selectedDateKey));
-  const currentGroup = groupedByHallroom?.[0] || null;
-  const currentTime = currentGroup?.times?.[0]?.start || "Choose time";
   const stats = useMemo(() => formatStatValue(movie, formatDuration), [movie, formatDuration]);
 
   const genres = useMemo(() => {
@@ -293,7 +293,7 @@ export default function MovieDetailPanel({
                 <Stack
                   direction={{ xs: "column", lg: "row" }}
                   spacing={{ xs: 2, lg: 3 }}
-                  alignItems={{ lg: "center" }}
+                  alignItems={{ xs: "stretch", lg: "flex-start" }}
                   justifyContent="space-between"
                 >
                   <Stack spacing={1.2} sx={{ flex: 1, minWidth: 0 }}>
@@ -396,66 +396,160 @@ export default function MovieDetailPanel({
                       })}
                     </Stack>
                   </Stack>
+                </Stack>
 
-                  <Stack direction={{ xs: "column", sm: "row" }} spacing={{ xs: 1.5, sm: 2.5 }} sx={{ minWidth: { lg: 360 }, width: { xs: "100%", lg: "auto" } }}>
-                    <Box sx={{ minWidth: { sm: 140 } }}>
-                      <Typography sx={{ color: BRAND.subtle, fontSize: 11 }}>Time</Typography>
-                      <Stack direction="row" spacing={0.75} alignItems="center" sx={{ mt: 0.5, display: "inline-flex" }}>
-                        <Typography sx={{ color: BRAND.text, fontSize: { xs: 16, sm: 18 }, fontWeight: 600, lineHeight: 1.2 }}>
-                          {currentTime}
-                        </Typography>
-                        <ChevronDown size={14} color={BRAND.accent} />
-                      </Stack>
+                <Box sx={{ mt: 2.25 }}>
+                  <Stack
+                    direction={{ xs: "column", sm: "row" }}
+                    spacing={1}
+                    justifyContent="space-between"
+                    alignItems={{ xs: "flex-start", sm: "center" }}
+                    sx={{ mb: 1.5 }}
+                  >
+                    <Box>
+                      <Typography sx={{ color: BRAND.text, fontSize: 16, fontWeight: 700 }}>
+                        Available Showtimes
+                      </Typography>
+                      <Typography sx={{ color: BRAND.muted, fontSize: 12 }}>
+                        Pick a hall and tap a time directly. No hidden dropdowns.
+                      </Typography>
                     </Box>
+                    <Button
+                      variant="contained"
+                      onClick={openFirstShowtime}
+                      disabled={!firstShowtimeId}
+                      sx={{
+                        borderRadius: 1,
+                        px: 2,
+                        py: 0.85,
+                        bgcolor: BRAND.accent,
+                        color: "#fff",
+                        fontWeight: 700,
+                        fontSize: 13,
+                        textTransform: "none",
+                        boxShadow: "none",
+                        "&:hover": { bgcolor: BRAND.accentHover, boxShadow: "none" },
+                        "&.Mui-disabled": {
+                          bgcolor: "rgba(255,255,255,0.08)",
+                          color: "rgba(255,255,255,0.38)",
+                        },
+                      }}
+                    >
+                      {firstShowtimeId ? "Book earliest show" : "No shows available"}
+                    </Button>
+                  </Stack>
 
-                    <Box sx={{ minWidth: 0, flex: 1 }}>
-                      <Typography sx={{ color: BRAND.subtle, fontSize: 11 }}>Address</Typography>
-                      <Stack direction="row" spacing={0.75} alignItems="center" sx={{ mt: 0.5, minWidth: 0 }}>
-                        <Typography
+                  {groupedByHallroom.length === 0 ? (
+                    <Paper
+                      sx={{
+                        borderRadius: 1.5,
+                        p: 2,
+                        bgcolor: alpha("#fff", 0.03),
+                        border: `1px solid ${BRAND.border}`,
+                      }}
+                    >
+                      <Typography sx={{ color: BRAND.text, fontWeight: 700 }}>
+                        No shows for this date
+                      </Typography>
+                      <Typography sx={{ mt: 0.75, color: BRAND.muted, fontSize: 13 }}>
+                        Try another date to see available halls and times.
+                      </Typography>
+                    </Paper>
+                  ) : (
+                    <Box
+                      sx={{
+                        display: "grid",
+                        gridTemplateColumns: { xs: "1fr", lg: "repeat(2, minmax(0, 1fr))" },
+                        gap: 1.5,
+                      }}
+                    >
+                      {groupedByHallroom.map((group) => (
+                        <Paper
+                          key={`${group.hallName}-${group.roomName}`}
                           sx={{
-                            color: BRAND.text,
-                            fontSize: { xs: 16, sm: 18 },
-                            fontWeight: 600,
-                            minWidth: 0,
-                            lineHeight: 1.2,
-                            flexShrink: 1,
+                            p: 1.5,
+                            borderRadius: 1.5,
+                            bgcolor: alpha("#fff", 0.03),
+                            border: `1px solid ${BRAND.border}`,
                           }}
                         >
-                          {currentGroup?.hallName || "Cinema Hall"}
-                        </Typography>
-                        <Box sx={{ display: "inline-flex", alignItems: "center", flexShrink: 0 }}>
-                          <ChevronDown size={14} color={BRAND.accent} />
-                        </Box>
-                      </Stack>
-                    </Box>
+                          <Stack
+                            direction={{ xs: "column", sm: "row" }}
+                            spacing={1.5}
+                            justifyContent="space-between"
+                            alignItems={{ xs: "flex-start", sm: "center" }}
+                          >
+                            <Box sx={{ minWidth: 0 }}>
+                              <Typography sx={{ color: BRAND.text, fontWeight: 700, fontSize: 15 }}>
+                                {group.hallName}
+                              </Typography>
+                              <Typography sx={{ mt: 0.5, color: BRAND.muted, fontSize: 12 }}>
+                                {group.roomName}
+                              </Typography>
+                              <Stack direction="row" spacing={0.75} alignItems="center" sx={{ mt: 1, color: BRAND.subtle }}>
+                                <MapPin size={13} />
+                                <Typography sx={{ fontSize: 12 }}>{group.hallLocation}</Typography>
+                              </Stack>
+                            </Box>
 
-                    <Box sx={{ minWidth: { sm: 120 } }}>
-                      <Typography sx={{ color: BRAND.subtle, fontSize: 11 }}>Booking</Typography>
-                      <Button
-                        variant="contained"
-                        onClick={openFirstShowtime}
-                        sx={{
-                          mt: 0.5,
-                          minWidth: 0,
-                          width: { xs: "100%", sm: "auto" },
-                          borderRadius: 1,
-                          px: 2,
-                          py: 0.85,
-                          bgcolor: BRAND.accent,
-                          color: "#fff",
-                          fontWeight: 700,
-                          fontSize: 13,
-                          textTransform: "none",
-                          boxShadow: "none",
-                          whiteSpace: "nowrap",
-                          "&:hover": { bgcolor: BRAND.accentHover, boxShadow: "none" },
-                        }}
-                      >
-                        Book Now
-                      </Button>
+                            {group.hallId ? (
+                              <Button
+                                onClick={() => onOpenChat?.(group)}
+                                startIcon={<MessageSquare size={15} />}
+                                sx={{
+                                  minWidth: 0,
+                                  borderRadius: 1,
+                                  px: 1.5,
+                                  py: 0.7,
+                                  bgcolor: alpha("#fff", 0.04),
+                                  color: BRAND.text,
+                                  textTransform: "none",
+                                  fontSize: 12,
+                                  whiteSpace: "nowrap",
+                                  "&:hover": { bgcolor: alpha("#fff", 0.08) },
+                                }}
+                              >
+                                Message hall
+                              </Button>
+                            ) : null}
+                          </Stack>
+
+                          <Stack direction="row" spacing={0.75} alignItems="center" sx={{ mt: 1.5, color: BRAND.subtle }}>
+                            <Clock3 size={13} />
+                            <Typography sx={{ fontSize: 12 }}>
+                              {group.times.length} show{group.times.length === 1 ? "" : "s"} available
+                            </Typography>
+                          </Stack>
+
+                          <Stack direction="row" spacing={0.75} useFlexGap flexWrap="wrap" sx={{ mt: 1.5 }}>
+                            {group.times.map((time) => (
+                              <Button
+                                key={time.id}
+                                onClick={() => onOpenBooking(time.id)}
+                                sx={{
+                                  borderRadius: 1,
+                                  px: 1.5,
+                                  py: 0.8,
+                                  bgcolor: alpha(BRAND.accent, 0.12),
+                                  color: "#fff",
+                                  border: `1px solid ${alpha(BRAND.accent, 0.28)}`,
+                                  textTransform: "none",
+                                  fontSize: 12,
+                                  fontWeight: 700,
+                                  "&:hover": {
+                                    bgcolor: alpha(BRAND.accent, 0.22),
+                                  },
+                                }}
+                              >
+                                {time.start}
+                              </Button>
+                            ))}
+                          </Stack>
+                        </Paper>
+                      ))}
                     </Box>
-                  </Stack>
-                </Stack>
+                  )}
+                </Box>
               </Paper>
             </Box>
           </Paper>

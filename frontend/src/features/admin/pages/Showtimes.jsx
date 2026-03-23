@@ -3,7 +3,6 @@ import {
   Alert,
   Box,
   Button,
-  Chip,
   Container,
   Dialog,
   DialogActions,
@@ -16,7 +15,6 @@ import {
   LinearProgress,
   MenuItem,
   Paper,
-  Select,
   Stack,
   Table,
   TableBody,
@@ -265,134 +263,245 @@ const Showtimes = () => {
     return showtimes.filter((item) => (item.show_date || "") >= today).length;
   }, [showtimes]);
 
-  return (
-    <Container maxWidth="lg" sx={{ py: 3 }}>
-      <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="space-between" alignItems={{ xs: "flex-start", sm: "center" }} mb={2.5}>
-        <Box>
-          <Typography variant="h4" fontWeight={700}>Showtime Management</Typography>
-          <Typography variant="body2" color="text.secondary" mt={0.5}>
-            {user?.role === "hall-admin"
-              ? "Manage schedules for your hallrooms."
-              : "Create, update, and remove movie schedules by hallroom."}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            Total: {showtimes.length} | Upcoming: {upcomingCount}
-          </Typography>
-        </Box>
-        <Button
-          variant="contained"
-          startIcon={<Plus size={16} />}
-          onClick={openCreateModal}
-          disabled={movies.length === 0 || rooms.length === 0}
-        >
-          Add Showtime
-        </Button>
-      </Stack>
+  const todayCount = useMemo(() => {
+    const today = todayString();
+    return showtimes.filter((item) => (item.show_date || "") === today).length;
+  }, [showtimes]);
 
-      <Paper elevation={0} sx={{ p: 1.5, mb: 2, border: "1px solid", borderColor: "divider" }}>
-        <Grid container spacing={1.5}>
-          <Grid item xs={12} md={4}>
-            <TextField
-              fullWidth
-              size="small"
-              placeholder="Search by movie, hall, room, date..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search size={16} />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={2.5}>
-            <Select
-              fullWidth
-              size="small"
-              value={filterMovieId}
-              onChange={(e) => setFilterMovieId(e.target.value)}
-              displayEmpty
-            >
-              <MenuItem value="">All Movies</MenuItem>
-              {movies.map((movie) => (
-                <MenuItem key={movie.id} value={movie.id}>
-                  {movie.movie_title}
-                </MenuItem>
-              ))}
-            </Select>
-          </Grid>
-          <Grid item xs={12} sm={6} md={2.5}>
-            <Select
-              fullWidth
-              size="small"
-              value={filterHallroomId}
-              onChange={(e) => setFilterHallroomId(e.target.value)}
-              displayEmpty
-            >
-              <MenuItem value="">All Hallrooms</MenuItem>
-              {rooms.map((room) => (
-                <MenuItem key={room.id} value={room.id}>
-                  {room.Hall?.hall_name ? `${room.Hall.hall_name} - ` : ""}{room.roomName}
-                </MenuItem>
-              ))}
-            </Select>
-          </Grid>
-          <Grid item xs={12} sm={6} md={2}>
-            <TextField
-              fullWidth
-              size="small"
-              type="date"
-              value={filterDate}
-              onChange={(e) => setFilterDate(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <CalendarDays size={16} />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={1}>
-            <Stack direction="row" spacing={1}>
-              <Button variant="outlined" size="small" onClick={() => setFilterDate(todayString())}>
-                Today
-              </Button>
-              <Button variant="text" size="small" onClick={clearFilters} disabled={!hasActiveFilters}>
-                Reset
+  const selectedCreateMovie = useMemo(
+    () => movies.find((movie) => String(movie.id) === String(createForm.movieId)) || null,
+    [movies, createForm.movieId],
+  );
+
+  const selectedCreateRoom = useMemo(
+    () => rooms.find((room) => String(room.id) === String(createForm.hallroomId)) || null,
+    [rooms, createForm.hallroomId],
+  );
+
+  return (
+    <Container maxWidth="xl" sx={{ py: { xs: 2, md: 3 } }}>
+      <Paper
+        elevation={0}
+        sx={{
+          mb: 2,
+          border: "1px solid",
+          borderColor: "divider",
+          borderRadius: 1,
+          backgroundColor: "background.paper",
+        }}
+      >
+        <Box sx={{ px: { xs: 2, md: 3 }, py: 2.5 }}>
+          <Stack
+            direction={{ xs: "column", lg: "row" }}
+            spacing={2}
+            justifyContent="space-between"
+            alignItems={{ xs: "flex-start", lg: "center" }}
+          >
+            <Box>
+              <Typography variant="overline" sx={{ letterSpacing: "0.16em", color: "text.secondary" }}>
+                Scheduling
+              </Typography>
+              <Typography variant="h4" fontWeight={800}>Showtime Management</Typography>
+              <Typography variant="body2" color="text.secondary" mt={0.75}>
+                {user?.role === "hall-admin"
+                  ? "Manage schedules for your hallrooms."
+                  : "Create, update, and remove movie schedules by hallroom."}
+              </Typography>
+            </Box>
+
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} sx={{ width: { xs: "100%", lg: "auto" } }}>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                  border: "1px solid",
+                  borderColor: "divider",
+                  minWidth: { xs: "100%", sm: 280 },
+                }}
+              >
+                {[
+                  { label: "Total", value: showtimes.length },
+                  { label: "Today", value: todayCount },
+                  { label: "Upcoming", value: upcomingCount },
+                ].map((item, index) => (
+                  <Box
+                    key={item.label}
+                    sx={{
+                      px: 2,
+                      py: 1.5,
+                      borderLeft: index === 0 ? "none" : "1px solid",
+                      borderColor: "divider",
+                    }}
+                  >
+                    <Typography variant="caption" color="text.secondary">
+                      {item.label}
+                    </Typography>
+                    <Typography variant="h6" fontWeight={800}>
+                      {item.value}
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
+
+              <Button
+                variant="contained"
+                startIcon={<Plus size={16} />}
+                onClick={openCreateModal}
+                disabled={movies.length === 0 || rooms.length === 0}
+                sx={{
+                  borderRadius: 1,
+                  px: 2.5,
+                  minHeight: 48,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Add Showtime
               </Button>
             </Stack>
-          </Grid>
-        </Grid>
+          </Stack>
+        </Box>
       </Paper>
 
-      <Paper elevation={0} sx={{ border: "1px solid", borderColor: "divider", overflow: "hidden" }}>
+      <Paper
+        elevation={0}
+        sx={{
+          mb: 2,
+          border: "1px solid",
+          borderColor: "divider",
+          borderRadius: 1,
+          backgroundColor: "background.paper",
+        }}
+      >
+        <Box sx={{ px: { xs: 2, md: 3 }, py: 2 }}>
+          <Stack direction={{ xs: "column", md: "row" }} spacing={2} justifyContent="space-between" alignItems={{ xs: "flex-start", md: "center" }} mb={1.5}>
+            <Box>
+              <Typography variant="subtitle1" fontWeight={700}>Filters</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Narrow the schedule list by movie, room, or date.
+              </Typography>
+            </Box>
+            {hasActiveFilters ? (
+              <Button variant="text" size="small" onClick={clearFilters}>
+                Clear Filters
+              </Button>
+            ) : null}
+          </Stack>
+
+          <Grid container spacing={1.5}>
+            <Grid item xs={12} md={4}>
+              <TextField
+                fullWidth
+                size="small"
+                placeholder="Search by movie, hall, room, date..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search size={16} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={2.5}>
+              <TextField select fullWidth size="small" value={filterMovieId} onChange={(e) => setFilterMovieId(e.target.value)}>
+                <MenuItem value="">All Movies</MenuItem>
+                {movies.map((movie) => (
+                  <MenuItem key={movie.id} value={movie.id}>
+                    {movie.movie_title}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+            <Grid item xs={12} sm={6} md={2.5}>
+              <TextField select fullWidth size="small" value={filterHallroomId} onChange={(e) => setFilterHallroomId(e.target.value)}>
+                <MenuItem value="">All Hallrooms</MenuItem>
+                {rooms.map((room) => (
+                  <MenuItem key={room.id} value={room.id}>
+                    {room.Hall?.hall_name ? `${room.Hall.hall_name} - ` : ""}{room.roomName}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+            <Grid item xs={12} sm={6} md={2}>
+              <TextField
+                fullWidth
+                size="small"
+                type="date"
+                value={filterDate}
+                onChange={(e) => setFilterDate(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <CalendarDays size={16} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={1}>
+              <Button variant="outlined" size="small" onClick={() => setFilterDate(todayString())} sx={{ width: "100%", borderRadius: 1, minHeight: 40 }}>
+                Today
+              </Button>
+            </Grid>
+          </Grid>
+        </Box>
+      </Paper>
+
+      <Paper
+        elevation={0}
+        sx={{
+          border: "1px solid",
+          borderColor: "divider",
+          borderRadius: 1,
+          overflow: "hidden",
+          backgroundColor: "background.paper",
+        }}
+      >
+        <Box sx={{ px: { xs: 2, md: 3 }, py: 1.75, borderBottom: "1px solid", borderColor: "divider" }}>
+          <Typography variant="subtitle1" fontWeight={700}>Schedule List</Typography>
+          <Typography variant="body2" color="text.secondary">
+            {user?.role === "hall-admin"
+              ? "All showtimes for your managed rooms."
+              : "All scheduled shows across movies and hallrooms."}
+          </Typography>
+        </Box>
         {loading ? (
           <LinearProgress />
         ) : filteredByQuery.length === 0 ? (
-          <Box sx={{ py: 4, textAlign: "center" }}>
-            <Typography color="text.secondary">No showtimes found</Typography>
+          <Box sx={{ py: 5, textAlign: "center", px: 3 }}>
+            <Typography variant="h6" color="text.primary">No showtimes found</Typography>
+            <Typography color="text.secondary" sx={{ mt: 1 }}>
+              Adjust your filters or create a new schedule.
+            </Typography>
           </Box>
         ) : (
           <TableContainer>
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell>Movie</TableCell>
-                  <TableCell>Hall / Room</TableCell>
-                  <TableCell>Date</TableCell>
-                  <TableCell>Start</TableCell>
-                  <TableCell>End</TableCell>
-                  <TableCell align="center">Actions</TableCell>
+                  <TableCell sx={{ py: 1.5, fontWeight: 700 }}>Movie</TableCell>
+                  <TableCell sx={{ py: 1.5, fontWeight: 700 }}>Hall / Room</TableCell>
+                  <TableCell sx={{ py: 1.5, fontWeight: 700 }}>Date</TableCell>
+                  <TableCell sx={{ py: 1.5, fontWeight: 700 }}>Start</TableCell>
+                  <TableCell sx={{ py: 1.5, fontWeight: 700 }}>End</TableCell>
+                  <TableCell sx={{ py: 1.5, fontWeight: 700 }} align="center">Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {filteredByQuery.map((showtime) => (
-                  <TableRow hover key={showtime.id}>
-                    <TableCell>{showtime.Movie?.movie_title || "Unknown movie"}</TableCell>
-                    <TableCell>
+                  <TableRow
+                    hover
+                    key={showtime.id}
+                    sx={{
+                      "& td": { py: 1.75 },
+                      "&:last-child td": { borderBottom: 0 },
+                    }}
+                  >
+                    <TableCell sx={{ fontWeight: 600 }}>{showtime.Movie?.movie_title || "Unknown movie"}</TableCell>
+                    <TableCell sx={{ color: "text.secondary" }}>
                       {(showtime.Hallroom?.Hall?.hall_name || "Unknown hall") + " / " + (showtime.Hallroom?.roomName || "Unknown room")}
                     </TableCell>
                     <TableCell>{showtime.show_date || "N/A"}</TableCell>
@@ -416,10 +525,14 @@ const Showtimes = () => {
         )}
       </Paper>
 
-      {/* Create Dialog */}
-      <Dialog open={showCreateModal} onClose={() => setShowCreateModal(false)} fullWidth maxWidth="sm">
-        <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <Typography variant="h6" fontWeight={700}>Create Showtime</Typography>
+      <Dialog open={showCreateModal} onClose={() => setShowCreateModal(false)} fullWidth maxWidth="md">
+        <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pb: 1.5 }}>
+          <Box>
+            <Typography variant="h6" fontWeight={800}>Create Showtime</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Fill in the schedule details and create the show.
+            </Typography>
+          </Box>
           <IconButton onClick={() => setShowCreateModal(false)}>
             <X size={18} />
           </IconButton>
@@ -428,75 +541,100 @@ const Showtimes = () => {
         {error && <Alert severity="error" sx={{ m: 2 }}>{error}</Alert>}
         <DialogContent dividers>
           <form id="create-showtime-form" onSubmit={handleCreate}>
-            <Stack spacing={2}>
-              <TextField
-                select
-                label="Movie"
-                value={createForm.movieId}
-                onChange={(e) => setCreateForm((p) => ({ ...p, movieId: e.target.value }))}
-                fullWidth
-                required
-              >
-                {movies.map((movie) => (
-                  <MenuItem key={movie.id} value={movie.id}>
-                    {movie.movie_title}
-                  </MenuItem>
-                ))}
-              </TextField>
-
-              <TextField
-                select
-                label="Hallroom"
-                value={createForm.hallroomId}
-                onChange={(e) => setCreateForm((p) => ({ ...p, hallroomId: e.target.value }))}
-                fullWidth
-                required
-              >
-                {rooms.map((room) => (
-                  <MenuItem key={room.id} value={room.id}>
-                    {room.Hall?.hall_name ? `${room.Hall.hall_name} - ` : ""}{room.roomName}
-                  </MenuItem>
-                ))}
-              </TextField>
-
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Show Date"
-                    type="date"
-                    value={createForm.show_date}
-                    onChange={(e) => setCreateForm((p) => ({ ...p, show_date: e.target.value }))}
-                    fullWidth
-                    InputProps={{ inputProps: { min: todayString() } }}
-                    required
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Start Time"
-                    type="time"
-                    value={createForm.start_time}
-                    onChange={(e) => setCreateForm((p) => ({ ...p, start_time: e.target.value }))}
-                    fullWidth
-                    required
-                  />
-                </Grid>
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  select
+                  label="Movie"
+                  value={createForm.movieId}
+                  onChange={(e) => setCreateForm((p) => ({ ...p, movieId: e.target.value }))}
+                  fullWidth
+                  required
+                >
+                  {movies.map((movie) => (
+                    <MenuItem key={movie.id} value={movie.id}>
+                      {movie.movie_title}
+                    </MenuItem>
+                  ))}
+                </TextField>
               </Grid>
-            </Stack>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  select
+                  label="Hallroom"
+                  value={createForm.hallroomId}
+                  onChange={(e) => setCreateForm((p) => ({ ...p, hallroomId: e.target.value }))}
+                  fullWidth
+                  required
+                >
+                  {rooms.map((room) => (
+                    <MenuItem key={room.id} value={room.id}>
+                      {room.Hall?.hall_name ? `${room.Hall.hall_name} - ` : ""}{room.roomName}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="Show Date"
+                  type="date"
+                  value={createForm.show_date}
+                  onChange={(e) => setCreateForm((p) => ({ ...p, show_date: e.target.value }))}
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  InputProps={{ inputProps: { min: todayString() } }}
+                  required
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="Start Time"
+                  type="time"
+                  value={createForm.start_time}
+                  onChange={(e) => setCreateForm((p) => ({ ...p, start_time: e.target.value }))}
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  required
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <Box
+                  sx={{
+                    mt: 0.5,
+                    px: 2,
+                    py: 1.5,
+                    border: "1px solid",
+                    borderColor: "divider",
+                    backgroundColor: "background.default",
+                  }}
+                >
+                  <Typography variant="caption" color="text.secondary">Preview</Typography>
+                  <Typography variant="body2" sx={{ mt: 0.75 }}>
+                    {selectedCreateMovie?.movie_title || "Select a movie"}{" "}
+                    {selectedCreateRoom ? `in ${selectedCreateRoom?.Hall?.hall_name || ""} / ${selectedCreateRoom?.roomName || ""}` : "in a hallroom"}{" "}
+                    {createForm.show_date && createForm.start_time ? `on ${createForm.show_date} at ${createForm.start_time}` : "with a date and time"}
+                  </Typography>
+                </Box>
+              </Grid>
+            </Grid>
           </form>
         </DialogContent>
-        <DialogActions sx={{ px: 3, py: 2 }}>
+        <DialogActions sx={{ px: 3, py: 2, borderTop: "1px solid", borderColor: "divider" }}>
           <Button onClick={() => setShowCreateModal(false)} color="inherit">Cancel</Button>
-          <Button type="submit" form="create-showtime-form" variant="contained" disabled={saving}>
+          <Button type="submit" form="create-showtime-form" variant="contained" disabled={saving} sx={{ borderRadius: 1, px: 2.5 }}>
             {saving ? "Saving..." : "Create Showtime"}
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Edit Dialog */}
       <Dialog open={Boolean(editingShowtime)} onClose={closeEditModal} fullWidth maxWidth="sm">
-        <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <Typography variant="h6" fontWeight={700}>Edit Showtime</Typography>
+        <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pb: 1.5 }}>
+          <Box>
+            <Typography variant="h6" fontWeight={800}>Edit Showtime</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Update the schedule timing.
+            </Typography>
+          </Box>
           <IconButton onClick={closeEditModal}>
             <X size={18} />
           </IconButton>
@@ -513,6 +651,7 @@ const Showtimes = () => {
                   value={editForm.show_date}
                   onChange={(e) => setEditForm((p) => ({ ...p, show_date: e.target.value }))}
                   fullWidth
+                  InputLabelProps={{ shrink: true }}
                   required
                 />
               </Grid>
@@ -523,15 +662,16 @@ const Showtimes = () => {
                   value={editForm.start_time}
                   onChange={(e) => setEditForm((p) => ({ ...p, start_time: e.target.value }))}
                   fullWidth
+                  InputLabelProps={{ shrink: true }}
                   required
                 />
               </Grid>
             </Grid>
           </form>
         </DialogContent>
-        <DialogActions sx={{ px: 3, py: 2 }}>
+        <DialogActions sx={{ px: 3, py: 2, borderTop: "1px solid", borderColor: "divider" }}>
           <Button onClick={closeEditModal} color="inherit">Cancel</Button>
-          <Button type="submit" form="edit-showtime-form" variant="contained" disabled={saving}>
+          <Button type="submit" form="edit-showtime-form" variant="contained" disabled={saving} sx={{ borderRadius: 1, px: 2.5 }}>
             {saving ? "Saving..." : "Update Showtime"}
           </Button>
         </DialogActions>

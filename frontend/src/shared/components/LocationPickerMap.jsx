@@ -145,8 +145,7 @@ const LocationPickerMap = ({ locationValue, onLocationSelect }) => {
     );
   };
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
+  const handleSearch = async () => {
 
     const trimmedQuery = searchQuery.trim();
     if (!trimmedQuery) {
@@ -197,22 +196,29 @@ const LocationPickerMap = ({ locationValue, onLocationSelect }) => {
 
   return (
     <div className="space-y-2">
-      <form onSubmit={handleSearch} className="flex gap-2">
+      <div className="flex gap-2">
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              handleSearch();
+            }
+          }}
           placeholder="Search location on map"
           className="w-full rounded-lg border border-white/15 bg-secondary px-3 py-2 text-sm text-text-primary focus:border-[#D72626] focus:outline-none"
         />
         <button
-          type="submit"
+          type="button"
+          onClick={handleSearch}
           disabled={isSearching}
           className="rounded-lg bg-[#D72626] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
         >
           {isSearching ? "..." : "Search"}
         </button>
-      </form>
+      </div>
       {searchResults.length > 0 && (
         <div className="max-h-40 overflow-y-auto rounded-lg border border-white/15 bg-secondary">
           {searchResults.map((result) => (
