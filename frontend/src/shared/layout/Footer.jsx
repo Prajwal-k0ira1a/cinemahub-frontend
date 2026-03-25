@@ -18,7 +18,7 @@ const footerGroups = [
       { label: "Movies", to: "/movies" },
       { label: "Locations", to: "/locations" },
       { label: "Cookie Policy", to: "/legal/cookie" },
-      { label: "Hall Staff Apply", to: "/hall-staff/apply" },
+      { label: "Join as Hall Admin", to: "/hall-staff/apply" },
     ],
   },
 ];

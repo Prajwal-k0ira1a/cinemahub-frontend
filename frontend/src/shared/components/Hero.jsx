@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Play, TvMinimalPlay, Clock, Calendar, Star } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { API_BASE_URL, API_SERVER_URL } from "../config/api.js";
 
 import "../../index.css";
@@ -22,6 +23,7 @@ const normalizeHeroMovies = (movies) =>
       ...movie,
       movie_title: movie.movie_title || movie.title || "Untitled Movie",
       moviePoster: getMoviePosterUrl(movie.moviePoster),
+      movieTrailer: movie.movieTrailer || "",
       description: movie.description || "No description available yet.",
       duration: Number(movie.duration) || 0,
       genre:
@@ -221,6 +223,7 @@ const ThumbnailCard = ({ movie, index, activeIndex, onClick }) => {
 // ==================== MAIN COMPONENT ====================
 
 const Hero = () => {
+  const navigate = useNavigate();
   const [movies, setMovies] = useState([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [autoPlay, setAutoPlay] = useState(true);
@@ -271,6 +274,30 @@ const Hero = () => {
     setActiveIndex(index);
     setAutoPlay(false);
     setTimeout(() => setAutoPlay(true), 5000);
+  };
+
+  const handleOpenDetails = () => {
+    if (!activeMovie?.id) {
+      navigate("/movies");
+      return;
+    }
+
+    navigate(`/movies/${activeMovie.id}`);
+  };
+
+  const handleWatchTrailer = () => {
+    if (!activeMovie?.movieTrailer) {
+      handleOpenDetails();
+      return;
+    }
+
+    const trailerUrl = /^https?:\/\//i.test(activeMovie.movieTrailer)
+      ? activeMovie.movieTrailer
+      : `${API_SERVER_URL}/uploads/${String(activeMovie.movieTrailer)
+          .replace(/^\/+/, "")
+          .replace(/^uploads\//, "")}`;
+
+    window.open(trailerUrl, "_blank", "noopener,noreferrer");
   };
 
   if (loading) {
@@ -409,14 +436,16 @@ const Hero = () => {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  onClick={handleWatchTrailer}
                   className="w-full sm:w-auto px-8 py-3 rounded-full bg-accent text-white font-bold flex items-center justify-center gap-2 hover:bg-accent/90 transition-colors drop-shadow-lg"
                 >
                   <Play size={20} fill="currentColor" />
-                  Watch Now
+                  Watch Trailer
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  onClick={handleOpenDetails}
                   className="w-full sm:w-auto px-8 py-3 rounded-full border-2 border-white text-white font-bold hover:bg-white/10 transition-all drop-shadow-lg"
                 >
                   Detail →
