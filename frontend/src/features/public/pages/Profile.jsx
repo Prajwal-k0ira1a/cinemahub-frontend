@@ -517,19 +517,24 @@ const Profile = () => {
           "radial-gradient(circle at top left, rgba(229,9,20,0.08) 0%, rgba(229,9,20,0) 32%), radial-gradient(circle at top right, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0) 28%), #050505",
       }}
     >
-      <Container maxWidth="xl">
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={4} lg={3}>
-            <Paper sx={{ ...pageSurface, p: 3, position: { md: "sticky" }, top: { md: 96 } }}>
-              <Stack spacing={2.5}>
-                <Stack direction="row" spacing={2} alignItems="center">
+      <Container maxWidth={false} sx={{ px: { xs: 2, md: 4, lg: 6 } }}>
+        <Stack spacing={3}>
+          <Paper sx={{ ...pageSurface, p: { xs: 2.5, md: 3 } }}>
+            <Stack spacing={2.5}>
+              <Stack
+                direction={{ xs: "column", md: "row" }}
+                spacing={2}
+                alignItems={{ xs: "flex-start", md: "center" }}
+                justifyContent="space-between"
+              >
+                <Stack direction="row" spacing={2} alignItems="center" sx={{ minWidth: 0 }}>
                   <Avatar
                     src={avatar}
                     alt="User avatar"
-                    sx={{ width: 68, height: 68, border: "1px solid rgba(255,255,255,0.12)" }}
+                    sx={{ width: 72, height: 72, border: "1px solid rgba(255,255,255,0.12)" }}
                   />
                   <Box sx={{ minWidth: 0 }}>
-                    <Typography sx={{ fontSize: 22, fontWeight: 800, color: "#fff" }}>
+                    <Typography sx={{ fontSize: { xs: 22, md: 26 }, fontWeight: 800, color: "#fff" }}>
                       {displayName}
                     </Typography>
                     <Typography sx={{ color: "rgba(255,255,255,0.58)", fontSize: 14 }} noWrap>
@@ -537,40 +542,48 @@ const Profile = () => {
                     </Typography>
                   </Box>
                 </Stack>
-
-                <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
-
-                <Stack spacing={1}>
-                  {MENU_ITEMS.map(({ key, label, icon: Icon }) => (
-                    <Button
-                      key={key}
-                      onClick={() => setActiveTab(key)}
-                      startIcon={<Icon size={18} />}
-                      sx={{
-                        justifyContent: "flex-start",
-                        borderRadius: 3,
-                        px: 2,
-                        py: 1.3,
-                        color: activeTab === key ? "#fff" : "rgba(255,255,255,0.74)",
-                        backgroundColor: activeTab === key ? "rgba(229,9,20,0.18)" : "transparent",
-                        border: activeTab === key ? "1px solid rgba(229,9,20,0.28)" : "1px solid transparent",
-                        textTransform: "none",
-                        fontWeight: 700,
-                        "&:hover": {
-                          backgroundColor: activeTab === key ? "rgba(229,9,20,0.22)" : "rgba(255,255,255,0.05)",
-                        },
-                      }}
-                    >
-                      {label}
-                    </Button>
-                  ))}
-                </Stack>
+                <Chip
+                  label={`${MENU_ITEMS.find((item) => item.key === activeTab)?.label || "Profile"} view`}
+                  sx={{
+                    borderRadius: 999,
+                    color: "#fff",
+                    fontWeight: 700,
+                    border: "1px solid rgba(255,255,255,0.14)",
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                  }}
+                />
               </Stack>
-            </Paper>
-          </Grid>
 
-          <Grid item xs={12} md={8} lg={9}>
-            <Stack spacing={3}>
+              <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
+
+              <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                {MENU_ITEMS.map(({ key, label, icon: Icon }) => (
+                  <Button
+                    key={key}
+                    onClick={() => setActiveTab(key)}
+                    startIcon={<Icon size={18} />}
+                    sx={{
+                      borderRadius: 999,
+                      px: 2,
+                      py: 1.15,
+                      color: activeTab === key ? "#fff" : "rgba(255,255,255,0.74)",
+                      backgroundColor: activeTab === key ? "rgba(229,9,20,0.18)" : "rgba(255,255,255,0.03)",
+                      border: activeTab === key ? "1px solid rgba(229,9,20,0.28)" : "1px solid rgba(255,255,255,0.08)",
+                      textTransform: "none",
+                      fontWeight: 700,
+                      "&:hover": {
+                        backgroundColor: activeTab === key ? "rgba(229,9,20,0.22)" : "rgba(255,255,255,0.06)",
+                      },
+                    }}
+                  >
+                    {label}
+                  </Button>
+                ))}
+              </Stack>
+            </Stack>
+          </Paper>
+
+          <Stack spacing={3}>
               <Paper
                 sx={{
                   ...pageSurface,
@@ -696,9 +709,8 @@ const Profile = () => {
                   </CardContent>
                 </Card>
               )}
-            </Stack>
-          </Grid>
-        </Grid>
+          </Stack>
+        </Stack>
       </Container>
     </Box>
   );
