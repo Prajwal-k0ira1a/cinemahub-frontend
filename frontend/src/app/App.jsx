@@ -65,13 +65,13 @@ const App = () => {
             color: "#fff",
           },
           success: {
-            duration: 3000,
+            duration: 6000,
             style: {
               background: "#10b981",
             },
           },
           error: {
-            duration: 3000,
+            duration: 6000,
             style: {
               background: "#ef4444",
             },
