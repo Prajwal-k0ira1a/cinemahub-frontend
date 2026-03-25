@@ -64,6 +64,7 @@ const Showtimes = () => {
   const [filterDate, setFilterDate] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingShowtime, setEditingShowtime] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [error, setError] = useState("");
 
   const [createForm, setCreateForm] = useState({
@@ -234,13 +235,14 @@ const Showtimes = () => {
     }
   };
 
-  const handleDelete = async (showtimeId) => {
-    if (!window.confirm("Delete this showtime?")) return;
+  const handleDelete = async () => {
+    if (!deleteTarget?.id) return;
     try {
-      await axios.delete(`${API_BASE_URL}/showtime/delete/${showtimeId}`, {
+      await axios.delete(`${API_BASE_URL}/showtime/delete/${deleteTarget.id}`, {
         withCredentials: true,
       });
       toast.success("Showtime deleted");
+      setDeleteTarget(null);
       await fetchShowtimes();
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to delete showtime");
@@ -512,7 +514,18 @@ const Showtimes = () => {
                         <IconButton size="small" color="primary" onClick={() => openEditModal(showtime)}>
                           <Edit2 size={16} />
                         </IconButton>
-                        <IconButton size="small" color="error" onClick={() => handleDelete(showtime.id)}>
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() =>
+                            setDeleteTarget({
+                              id: showtime.id,
+                              movie: showtime.Movie?.movie_title || "this showtime",
+                              date: showtime.show_date || "",
+                              time: formatTime(showtime.start_time),
+                            })
+                          }
+                        >
                           <Trash2 size={16} />
                         </IconButton>
                       </Stack>
@@ -673,6 +686,28 @@ const Showtimes = () => {
           <Button onClick={closeEditModal} color="inherit">Cancel</Button>
           <Button type="submit" form="edit-showtime-form" variant="contained" disabled={saving} sx={{ borderRadius: 1, px: 2.5 }}>
             {saving ? "Saving..." : "Update Showtime"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={Boolean(deleteTarget)} onClose={() => setDeleteTarget(null)} fullWidth maxWidth="xs">
+        <DialogTitle>Delete Showtime</DialogTitle>
+        <DialogContent>
+          <Typography color="text.secondary">
+            Are you sure you want to delete
+            <Box component="span" sx={{ fontWeight: 700, color: "text.primary" }}>
+              {" "}{deleteTarget?.movie || "this showtime"}
+            </Box>
+            {deleteTarget?.date ? ` on ${deleteTarget.date}` : ""}
+            {deleteTarget?.time ? ` at ${deleteTarget.time}` : ""}?
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setDeleteTarget(null)} color="inherit">
+            Cancel
+          </Button>
+          <Button variant="contained" color="error" onClick={handleDelete}>
+            Delete
           </Button>
         </DialogActions>
       </Dialog>

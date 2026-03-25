@@ -98,6 +98,7 @@ const Halls = () => {
   const [rooms, setRooms] = useState([createRoom()]);
   const [seatBrush, setSeatBrush] = useState("regular");
   const [error, setError] = useState("");
+  const [deactivateTarget, setDeactivateTarget] = useState(null);
   const steps = ["Basic Info", "Location", "Rooms", "Seat Layout"];
 
   useEffect(() => {
@@ -233,11 +234,12 @@ const Halls = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to deactivate this hall?")) return;
+  const handleDelete = async () => {
+    if (!deactivateTarget?.id) return;
     try {
-      await axios.delete(`${API_BASE_URL}/hall/delete/${id}`, { withCredentials: true });
+      await axios.delete(`${API_BASE_URL}/hall/delete/${deactivateTarget.id}`, { withCredentials: true });
       toast.success("Hall deactivated successfully");
+      setDeactivateTarget(null);
       fetchHalls();
     } catch {
       toast.error("Failed to deactivate hall");
@@ -496,7 +498,7 @@ const Halls = () => {
                             color="error"
                             variant="outlined"
                             startIcon={<Trash2 size={14} />}
-                            onClick={() => handleDelete(hall.id)}
+                            onClick={() => setDeactivateTarget({ id: hall.id, name: hall.hall_name })}
                             sx={{ px: 1.5, flex: 1, borderRadius: 1 }}
                           >
                             Deactivate
@@ -797,6 +799,32 @@ const Halls = () => {
               {editingHall ? "Update Hall" : "Create Hall"}
             </Button>
           )}
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={Boolean(deactivateTarget)}
+        onClose={() => setDeactivateTarget(null)}
+        fullWidth
+        maxWidth="xs"
+      >
+        <DialogTitle>Deactivate Hall</DialogTitle>
+        <DialogContent>
+          <Typography color="text.secondary">
+            Are you sure you want to deactivate
+            <Box component="span" sx={{ fontWeight: 700, color: "text.primary" }}>
+              {" "}{deactivateTarget?.name || "this hall"}
+            </Box>
+            ? You can activate it again later if needed.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setDeactivateTarget(null)} color="inherit">
+            Cancel
+          </Button>
+          <Button variant="contained" color="error" onClick={handleDelete}>
+            Deactivate
+          </Button>
         </DialogActions>
       </Dialog>
     </Container>

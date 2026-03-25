@@ -73,6 +73,7 @@ const Movies = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const [formData, setFormData] = useState({
     movie_title: "",
@@ -258,11 +259,12 @@ const Movies = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this movie?")) return;
+  const handleDelete = async () => {
+    if (!deleteTarget?.id) return;
     try {
-      await axios.delete(`${API_BASE_URL}/movie/delete/${id}`, { withCredentials: true });
+      await axios.delete(`${API_BASE_URL}/movie/delete/${deleteTarget.id}`, { withCredentials: true });
       toast.success("Movie deleted successfully");
+      setDeleteTarget(null);
       fetchMovies();
     } catch (err) {
       toast.error("Failed to delete movie");
@@ -454,7 +456,7 @@ const Movies = () => {
                           <IconButton
                             size="small"
                             color="error"
-                            onClick={() => handleDelete(movie.id)}
+                            onClick={() => setDeleteTarget({ id: movie.id, title: movie.movie_title })}
                           >
                             <Trash2 size={18} />
                           </IconButton>
@@ -1031,6 +1033,32 @@ const Movies = () => {
               {submitting ? "Saving..." : editingMovie ? "Update Movie" : "Add Movie"}
             </Button>
           )}
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        fullWidth
+        maxWidth="xs"
+      >
+        <DialogTitle>Delete Movie</DialogTitle>
+        <DialogContent>
+          <Typography color="text.secondary">
+            Are you sure you want to delete
+            <Box component="span" sx={{ fontWeight: 700, color: "text.primary" }}>
+              {" "}{deleteTarget?.title || "this movie"}
+            </Box>
+            ? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setDeleteTarget(null)} color="inherit">
+            Cancel
+          </Button>
+          <Button variant="contained" color="error" onClick={handleDelete}>
+            Delete
+          </Button>
         </DialogActions>
       </Dialog>
     </Container>
