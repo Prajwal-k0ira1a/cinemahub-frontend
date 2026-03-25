@@ -7,7 +7,6 @@ const footerGroups = [
     title: "Information",
     links: [
       { label: "About Us", to: "/about" },
-      { label: "Contact Us", to: "/contact" },
       { label: "Terms & Conditions", to: "/legal/terms" },
       { label: "Privacy Policy", to: "/legal/privacy" },
       { label: "FAQ", to: "/faq" },
@@ -35,9 +34,9 @@ const FooterHeading = ({ children }) => (
 
 const Footer = () => {
   return (
-    <footer className="border-t border-white/8 bg-[#171717]">
-      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
+    <footer className="mt-8 border-t border-white/8 bg-[#171717] sm:mt-10">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           <div>
             <FooterHeading>About Us</FooterHeading>
             <Link to="/" className="inline-flex items-center gap-3">
@@ -77,16 +76,10 @@ const Footer = () => {
               <p>Email: hello@cinemahub.com</p>
               <p>Kathmandu, Nepal</p>
             </div>
-            <Link
-              to="/contact"
-              className="mt-6 inline-flex border border-white/12 bg-white/6 px-4 py-2 text-sm font-semibold text-white transition hover:border-accent hover:bg-accent"
-            >
-              Contact Team
-            </Link>
           </div>
         </div>
 
-        <div className="mt-12 border-t border-white/8 pt-6 text-sm text-white/45">
+        <div className="mt-8 border-t border-white/8 pt-5 text-sm text-white/45">
           Copyright 2026 CinemaHub. All rights reserved.
         </div>
       </div>

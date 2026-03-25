@@ -7,7 +7,6 @@ import Landing from "../features/public/pages/Landing.jsx";
 import MoviesPage from "../features/public/pages/MoviesPage.jsx";
 import Locations from "../features/public/pages/Locations.jsx";
 import About from "../features/public/pages/About.jsx";
-import Contact from "../features/public/pages/Contact.jsx";
 import MovieDetail from "../features/public/pages/MovieDetail.jsx";
 import Layout from "../shared/layout/Layout.jsx";
 import Terms from "../features/public/pages/Terms.jsx";
@@ -86,7 +85,6 @@ const App = () => {
             <Route path="/movies/:id" element={<MovieDetail />} />
             <Route path="/locations" element={<Locations />} />
             <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
             <Route path="/legal/terms" element={<Terms />} />
             <Route path="/legal/privacy" element={<Privacy />} />
             <Route path="/legal/cookie" element={<Cookie />} />

@@ -65,8 +65,8 @@ const MovieCard = ({ movie }) => {
     <Card
       sx={{
         width: "100%",
-        maxWidth: { xs: "100%", sm: 345 },
-        minHeight: { xs: "auto", sm: 420 },
+        maxWidth: { xs: "100%", sm: 300 },
+        minHeight: { xs: "auto", sm: 360 },
         position: "relative",
         overflow: "hidden",
         borderRadius: { xs: "12px", sm: "18px" },
@@ -91,7 +91,7 @@ const MovieCard = ({ movie }) => {
         alt={`${movie.title} poster`}
         image={movie.image}
         sx={{
-          height: { xs: 240, sm: 420 },
+          height: { xs: 205, sm: 360 },
           objectFit: "cover",
         }}
       />
@@ -284,77 +284,49 @@ const Movies = () => {
     fetchMovies();
   }, []);
 
-  const topCountLabel = useMemo(() => `${movies.length} titles`, [movies.length]);
   const filteredMovies = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return movies;
 
-    return movies.filter((movie) =>
-      [movie.title, movie.director, movie.year, movie.duration, movie.tags.join(" ")]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase()
-        .includes(q),
-    );
+    return movies.filter((movie) => {
+      const matchesSearch =
+        !q ||
+        [movie.title, movie.director, movie.year, movie.duration, movie.tags.join(" ")]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase()
+          .includes(q);
+      return matchesSearch;
+    });
   }, [movies, search]);
 
   return (
-    <section className="py-10">
+    <section className="pb-8 pt-2 sm:pt-3">
       <div className="container mx-auto px-4 sm:px-6">
-        <Paper
-          sx={{
-            mb: 4,
-            p: { xs: 2, md: 3 },
-            borderRadius: 3,
-            border: "1px solid rgba(255,255,255,0.08)",
-            background:
-              "linear-gradient(180deg, rgba(24,24,27,0.96) 0%, rgba(14,14,16,0.98) 100%)",
-            color: "#fff",
-          }}
-        >
-          <Stack spacing={2.5}>
-            <Stack
-              direction={{ xs: "column", md: "row" }}
-              alignItems={{ xs: "flex-start", md: "center" }}
-              justifyContent="space-between"
-              spacing={2}
-            >
-              <Box>
-                <Typography variant="h5" sx={{ fontWeight: 800, color: "#fff" }}>
-                  Now Playing
-                </Typography>
-                <Typography sx={{ mt: 0.75, fontSize: { xs: 13, sm: 14 }, color: "rgba(255,255,255,0.68)" }}>
-                  Browse and book from currently listed movies.
-                </Typography>
-              </Box>
-              <Chip
-                label={topCountLabel}
-                sx={{
-                  borderRadius: 999,
-                  color: "#fff",
-                  fontWeight: 700,
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  backgroundColor: "rgba(255,255,255,0.06)",
-                }}
-              />
-            </Stack>
-
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2.5 }}>
+          <Box sx={{ width: "100%", maxWidth: { xs: "100%", md: 360 } }}>
             <TextField
-              fullWidth
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search movies, genres, year..."
               variant="outlined"
+              size="small"
+              fullWidth
+              sx={{
+                "& .MuiInputBase-root": {
+                  height: { xs: 44, md: 46 },
+                  fontSize: 14,
+                },
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Search size={16} color="#94a3b8" />
+                    <Search size={15} color="#94a3b8" />
                   </InputAdornment>
                 ),
                 sx: {
-                  borderRadius: 3,
+                  borderRadius: 999,
                   color: "#fff",
-                  backgroundColor: "rgba(255,255,255,0.04)",
+                  backgroundColor: "rgba(10,10,12,0.46)",
                   "& .MuiOutlinedInput-notchedOutline": {
                     borderColor: "rgba(255,255,255,0.12)",
                   },
@@ -363,17 +335,13 @@ const Movies = () => {
                   },
                   "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
                     borderColor: "#e50914",
+                    borderWidth: 1,
                   },
                 },
               }}
             />
-
-            <Typography sx={{ fontSize: 12, color: "rgba(255,255,255,0.62)" }}>
-              Showing <Box component="span" sx={{ fontWeight: 700, color: "#fff" }}>{filteredMovies.length}</Box> of{" "}
-              <Box component="span" sx={{ fontWeight: 700, color: "#fff" }}>{movies.length}</Box> movies
-            </Typography>
-          </Stack>
-        </Paper>
+          </Box>
+        </Box>
 
         {loading ? (
           <Paper

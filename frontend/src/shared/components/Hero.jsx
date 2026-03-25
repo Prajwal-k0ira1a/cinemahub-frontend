@@ -384,15 +384,8 @@ const Hero = () => {
                     },
                   )}
                 </span>
-                <span className="inline-flex items-center text-sm text-white font-semibold bg-white/10 backdrop-blur px-3 py-1.5 rounded-full border border-white/20">
-                  HD
-                </span>
-                <span className="inline-flex items-center gap-2 text-sm text-white font-semibold bg-white/10 backdrop-blur px-3 py-1.5 rounded-full border border-white/20">
-                  <Star size={14} className="text-amber-400" fill="currentColor" />
-                  {activeMovie.duration > 0
-                    ? (activeMovie.duration / 20).toFixed(1)
-                    : "N/A"}
-                </span>
+               
+            
                
               </motion.div>
 

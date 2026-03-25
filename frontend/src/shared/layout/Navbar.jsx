@@ -41,7 +41,6 @@ const NAV_ITEMS = [
   { to: "/movies", label: "Movies" },
   { to: "/locations", label: "Locations" },
   { to: "/about", label: "About" },
-  { to: "/contact", label: "Contact" },
 ];
 
 const NEPALI_CITIES = [

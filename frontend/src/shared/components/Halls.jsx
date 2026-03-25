@@ -10,7 +10,6 @@ import {
   CardMedia,
   Chip,
   InputAdornment,
-  Paper,
   Stack,
   TextField,
   Typography,
@@ -23,9 +22,6 @@ import LiveChatModal from "../../features/chat/components/LiveChatModal.jsx";
 
 const FALLBACK_HALL_IMAGE =
   "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1400&auto=format&fit=crop";
-const LOCATION_CITY_STORAGE_KEY = "selected_city";
-const LOCATION_CITY_EVENT = "city-changed";
-const ALL_NEPAL_CITY = "All Nepal";
 
 const getHallPosterUrl = (poster) => {
   if (!poster) return FALLBACK_HALL_IMAGE;
@@ -55,13 +51,6 @@ const Halls = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [chatHall, setChatHall] = useState(null);
-  const [selectedCity, setSelectedCity] = useState(() => {
-    try {
-      return localStorage.getItem(LOCATION_CITY_STORAGE_KEY) || ALL_NEPAL_CITY;
-    } catch {
-      return ALL_NEPAL_CITY;
-    }
-  });
 
   useEffect(() => {
     const fetchHalls = async () => {
@@ -83,51 +72,20 @@ const Halls = () => {
     fetchHalls();
   }, []);
 
-  useEffect(() => {
-    const syncFromStorage = () => {
-      try {
-        setSelectedCity(localStorage.getItem(LOCATION_CITY_STORAGE_KEY) || ALL_NEPAL_CITY);
-      } catch {
-        setSelectedCity(ALL_NEPAL_CITY);
-      }
-    };
-
-    const handleCityChange = (event) => {
-      const nextCity = event?.detail?.city;
-      if (typeof nextCity === "string" && nextCity.trim()) {
-        setSelectedCity(nextCity);
-        return;
-      }
-      syncFromStorage();
-    };
-
-    window.addEventListener("storage", syncFromStorage);
-    window.addEventListener(LOCATION_CITY_EVENT, handleCityChange);
-    return () => {
-      window.removeEventListener("storage", syncFromStorage);
-      window.removeEventListener(LOCATION_CITY_EVENT, handleCityChange);
-    };
-  }, []);
-
   const filteredHalls = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const selectedCityQuery = selectedCity.trim().toLowerCase();
-    const isAllNepal = selectedCityQuery === ALL_NEPAL_CITY.toLowerCase();
 
     return halls.filter((hall) => {
-      const hallLocation = (hall.hall_location || "").toLowerCase();
-      const matchesSelectedCity = isAllNepal || !selectedCityQuery || hallLocation.includes(selectedCityQuery);
-
-      if (!matchesSelectedCity) return false;
-      if (!q) return true;
-
-      return [hall.hall_name, hall.hall_location, hall.hall_contact]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase()
-        .includes(q);
+      const matchesSearch =
+        !q ||
+        [hall.hall_name, hall.hall_location, hall.hall_contact]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase()
+          .includes(q);
+      return matchesSearch;
     });
-  }, [halls, search, selectedCity]);
+  }, [halls, search]);
 
   const openHallChat = (hall) => {
     if (!isAuthenticated) {
@@ -137,68 +95,34 @@ const Halls = () => {
     setChatHall({ id: hall.id, name: hall.hall_name || "Cinema Hall" });
   };
 
-  const locationLabel =
-    selectedCity.trim().toLowerCase() === ALL_NEPAL_CITY.toLowerCase()
-      ? "Nepal-wide"
-      : selectedCity;
-
   return (
-    <section className="py-10" id="locations">
+    <section className="pb-8 pt-2 sm:pt-3" id="locations">
       <div className="container mx-auto px-6">
-        <Paper
-          sx={{
-            mb: 4,
-            p: { xs: 2.25, md: 3 },
-            borderRadius: 3,
-            border: "1px solid rgba(255,255,255,0.08)",
-            background:
-              "linear-gradient(180deg, rgba(24,24,27,0.96) 0%, rgba(14,14,16,0.98) 100%)",
-            color: "#fff",
-          }}
-        >
-          <Stack spacing={2.5}>
-            <Stack
-              direction={{ xs: "column", md: "row" }}
-              alignItems={{ xs: "flex-start", md: "center" }}
-              justifyContent="space-between"
-              spacing={2}
-            >
-              <Box>
-                <Typography variant="h5" sx={{ fontWeight: 800, color: "#fff" }}>
-                  Cinema Locations
-                </Typography>
-                <Typography sx={{ mt: 0.75, fontSize: 14, color: "rgba(255,255,255,0.68)" }}>
-                  Explore halls, view shows, and chat directly with hall admins.
-                </Typography>
-              </Box>
-              <Chip
-                label={`${filteredHalls.length} / ${halls.length} halls`}
-                sx={{
-                  borderRadius: 0,
-                  color: "#fff",
-                  fontWeight: 700,
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  backgroundColor: "rgba(255,255,255,0.06)",
-                }}
-              />
-            </Stack>
-
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2.5 }}>
+          <Box sx={{ width: "100%", maxWidth: { xs: "100%", md: 360 } }}>
             <TextField
-              fullWidth
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by hall name, location, or contact..."
               variant="outlined"
+              size="small"
+              fullWidth
+              sx={{
+                "& .MuiInputBase-root": {
+                  height: { xs: 42, md: 44 },
+                  fontSize: 14,
+                },
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Search size={16} color="#94a3b8" />
+                    <Search size={15} color="#94a3b8" />
                   </InputAdornment>
                 ),
                 sx: {
-                  borderRadius: 0,
+                  borderRadius: 999,
                   color: "#fff",
-                  backgroundColor: "rgba(255,255,255,0.04)",
+                  backgroundColor: "rgba(255,255,255,0.05)",
                   "& .MuiOutlinedInput-notchedOutline": {
                     borderColor: "rgba(255,255,255,0.12)",
                   },
@@ -211,12 +135,8 @@ const Halls = () => {
                 },
               }}
             />
-
-            <Typography sx={{ fontSize: 12, color: "rgba(255,255,255,0.62)" }}>
-              Region: <Box component="span" sx={{ fontWeight: 700, color: "#fff" }}>{locationLabel}</Box>
-            </Typography>
-          </Stack>
-        </Paper>
+          </Box>
+        </Box>
 
         {loading ? (
           <div className="rounded-xl border border-white/10 bg-secondary p-8 text-sm text-text-secondary">
@@ -232,6 +152,7 @@ const Halls = () => {
               display: "grid",
               gridTemplateColumns: { xs: "1fr", lg: "repeat(2, minmax(0, 1fr))" },
               gap: 2.5,
+              justifyContent: "center",
             }}
           >
             {filteredHalls.map((hall, index) => (
@@ -241,12 +162,13 @@ const Halls = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.06, duration: 0.35 }}
+                style={{ width: "100%", maxWidth: "680px", margin: "0 auto" }}
               >
                 <Card sx={hallCardSurface}>
                   <Box
                     sx={{
                       display: "grid",
-                      gridTemplateColumns: { xs: "1fr", sm: "160px minmax(0, 1fr)" },
+                      gridTemplateColumns: { xs: "1fr", sm: "140px minmax(0, 1fr)" },
                       alignItems: "stretch",
                     }}
                   >
@@ -255,8 +177,8 @@ const Halls = () => {
                       image={getHallPosterUrl(hall.hallPoster)}
                       alt={hall.hall_name || "Hall"}
                       sx={{
-                        height: { xs: 150, sm: "100%" },
-                        minHeight: { sm: 170 },
+                        height: { xs: 135, sm: "100%" },
+                        minHeight: { sm: 155 },
                         objectFit: "cover",
                       }}
                     />

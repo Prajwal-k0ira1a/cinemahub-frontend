@@ -3,8 +3,7 @@ import Halls from "../../../shared/components/Halls.jsx";
 
 const Locations = () => {
   return (
-    <div className="pb-12 pt-24">
-    
+    <div className="pt-2 sm:pb-8 sm:pt-12">
       <Halls showMap />
     </div>
   );

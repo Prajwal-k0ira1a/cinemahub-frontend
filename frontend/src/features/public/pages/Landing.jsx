@@ -1,10 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  Avatar,
   Box,
   Button,
   Card,
@@ -16,126 +15,12 @@ import {
   Divider,
   Paper,
   Stack,
-  TextField,
   Typography,
 } from "@mui/material";
-import { Star, ChevronDown, ArrowRight, Download } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
+import axios from "axios";
 import Hero from "../../../shared/components/Hero.jsx";
-import heroPoster from "../../../assets/Batman.png";
-import dunePoster from "../../../assets/Dune.jpg";
-import interstellarPoster from "../../../assets/interstellar.jpg";
-import oppenPoster from "../../../assets/Oppenheimer.jpg";
-import avatarPoster from "../../../assets/avatar.png";
-import roadPoster from "../../../assets/RoadToNinja.png";
-import purnaPoster from "../../../assets/purnaBahadur.png";
-import sweaterPoster from "../../../assets/unkoSweater.png";
-
-const HERO_STATS = [
-  { label: "Movies Available", value: "500+" },
-  { label: "Tickets Booked Weekly", value: "150+" },
-  { label: "Happy Moviegoers", value: "1M+" },
-];
-
-const CURRENTLY_IN_CINEMAS = [
-  {
-    title: "Revoir Paris",
-    genre: "Drama • Romance",
-    runtime: "2h 10m",
-    rating: "4.9",
-    image:
-      "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=640&q=80",
-  },
-  {
-    title: "Lemonade Sky",
-    genre: "Adventure",
-    runtime: "1h 55m",
-    rating: "4.7",
-    image: dunePoster,
-  },
-  {
-    title: "Rising Tide",
-    genre: "Action",
-    runtime: "2h 05m",
-    rating: "4.5",
-    image: interstellarPoster,
-  },
-  {
-    title: "Echoes of Tomorrow",
-    genre: "Sci-Fi",
-    runtime: "2h 20m",
-    rating: "4.8",
-    image: oppenPoster,
-  },
-  {
-    title: "Street Lights",
-    genre: "Romance",
-    runtime: "1h 48m",
-    rating: "4.6",
-    image: avatarPoster,
-  },
-];
-
-const TOP_MOVIES = [
-  {
-    title: "The Course",
-    genre: "Historical Drama",
-    rating: "5.0",
-    image:
-      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=640&q=80",
-  },
-  {
-    title: "Coda",
-    genre: "Musical Journey",
-    rating: "4.9",
-    image: purnaPoster,
-  },
-  {
-    title: "Verdant Seas",
-    genre: "Documentary",
-    rating: "4.8",
-    image:
-      "https://images.unsplash.com/photo-1517602302552-471fe67acf66?auto=format&fit=crop&w=640&q=80",
-  },
-  {
-    title: "Signal Fire",
-    genre: "Thriller",
-    rating: "4.7",
-    image: roadPoster,
-  },
-  {
-    title: "Twilight Riders",
-    genre: "Sci-Fi",
-    rating: "4.7",
-    image: sweaterPoster,
-  },
-  {
-    title: "City of Lights",
-    genre: "Romantic Comedy",
-    rating: "4.6",
-    image: heroPoster,
-  },
-];
-
-const COMING_SOON = [
-  {
-    title: "Midnight Atlas",
-    release: "Premieres This Friday",
-    summary: "A moody global thriller built for premium large-format screens.",
-    image: heroPoster,
-  },
-  {
-    title: "Second Summer",
-    release: "Early Access Next Week",
-    summary: "A warm coming-of-age romance with festival buzz and packed previews.",
-    image: sweaterPoster,
-  },
-  {
-    title: "The Last Frequency",
-    release: "Tickets Open Soon",
-    summary: "A tense sci-fi mystery with late-night screenings and fan events.",
-    image: roadPoster,
-  },
-];
+import { API_BASE_URL, API_SERVER_URL } from "../../../shared/config/api";
 
 const PLATFORM_FEATURES = [
   {
@@ -149,41 +34,6 @@ const PLATFORM_FEATURES = [
   {
     title: "Trusted Halls",
     detail: "Find verified venues, review locations, and compare sessions before you commit.",
-  },
-];
-
-const TESTIMONIALS = [
-  {
-    name: "Mira",
-    role: "Film Blogger",
-    quote:
-      "Ticketor is my go-to for catching premieres. Within seconds I can reserve the seat, add snacks, and share the plan with friends.",
-    avatar:
-      "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    name: "Sagar",
-    role: "Student",
-    quote:
-      "The promo codes make expensive weekends affordable, and the mobile wallet checkout is unbelievably fast.",
-    avatar:
-      "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    name: "Lina",
-    role: "Producer",
-    quote:
-      "We use Ticketor for press screenings. The support team is responsive and capped seating makes it easy to plan invites.",
-    avatar:
-      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    name: "Arjun",
-    role: "Cinephile",
-    quote:
-      "Dark mode, curated lists, and summary cards keep me looped into the week's best titles.",
-    avatar:
-      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80",
   },
 ];
 
@@ -235,6 +85,51 @@ const cardSurface = {
     borderColor: "rgba(229,9,20,0.45)",
     boxShadow: "0 24px 70px rgba(229,9,20,0.16)",
   },
+};
+
+const FALLBACK_POSTER =
+  "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1000&auto=format&fit=crop";
+
+const getMoviePosterUrl = (poster) => {
+  if (!poster) return FALLBACK_POSTER;
+  if (/^https?:\/\//i.test(poster)) return poster;
+  return `${API_SERVER_URL}/uploads/${poster}`;
+};
+
+const normalizeTags = (genre) => {
+  if (Array.isArray(genre)) return genre.slice(0, 2);
+  if (typeof genre === "string") {
+    return genre
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .slice(0, 2);
+  }
+  return ["Movie"];
+};
+
+const normalizeDuration = (duration) => {
+  const value = Number(duration);
+  if (!Number.isFinite(value) || value <= 0) return "N/A";
+  const hours = Math.floor(value / 60);
+  const mins = value % 60;
+  return `${hours}h ${mins}m`;
+};
+
+const normalizeReleaseDate = (releaseDate) => {
+  if (!releaseDate) return null;
+  const parsed = new Date(releaseDate);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const formatReleaseLabel = (releaseDate) => {
+  const parsed = normalizeReleaseDate(releaseDate);
+  if (!parsed) return "Release date to be announced";
+  return parsed.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 };
 
 const SectionHeading = ({ eyebrow, title, description, actionLabel }) => (
@@ -294,7 +189,7 @@ const SectionHeading = ({ eyebrow, title, description, actionLabel }) => (
   </Stack>
 );
 
-function MovieCard({ image, title, genre, runtime, rating }) {
+function MovieCard({ id, image, title, genre, runtime }) {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -340,33 +235,17 @@ function MovieCard({ image, title, genre, runtime, rating }) {
         }}
       >
         <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end", pb: 1 }}>
-          <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1.5} sx={{ mb: 1.25 }}>
-            <Typography
-              variant="caption"
-              sx={{
-                color: "rgba(255,255,255,0.72)",
-                letterSpacing: "0.2em",
-                textTransform: "uppercase",
-              }}
-            >
-              {genre}
-            </Typography>
-            {rating ? (
-              <Chip
-                icon={<Star size={14} fill="currentColor" />}
-                label={rating}
-                size="small"
-                sx={{
-                  color: "#ffd54f",
-                  borderRadius: 0,
-                  borderColor: "rgba(255,213,79,0.3)",
-                  backgroundColor: "rgba(255,213,79,0.08)",
-                  "& .MuiChip-icon": { color: "#ffd54f" },
-                }}
-                variant="outlined"
-              />
-            ) : null}
-          </Stack>
+          <Typography
+            variant="caption"
+            sx={{
+              mb: 1.25,
+              color: "rgba(255,255,255,0.72)",
+              letterSpacing: "0.2em",
+              textTransform: "uppercase",
+            }}
+          >
+            {genre}
+          </Typography>
 
           <Typography gutterBottom variant="h5" component="div" sx={{ color: "#fff", fontWeight: 800 }}>
             {title}
@@ -387,7 +266,7 @@ function MovieCard({ image, title, genre, runtime, rating }) {
         >
           <Button
             component={RouterLink}
-            to="/movies"
+            to={id ? `/movies/${id}` : "/movies"}
             size="small"
             variant="contained"
             sx={{
@@ -403,7 +282,7 @@ function MovieCard({ image, title, genre, runtime, rating }) {
           </Button>
           <Button
             component={RouterLink}
-            to="/movies"
+            to={id ? `/movies/${id}` : "/movies"}
             size="small"
             variant="outlined"
             sx={{
@@ -426,32 +305,95 @@ function MovieCard({ image, title, genre, runtime, rating }) {
   );
 }
 
-
-
-const TestimonialCard = ({ quote, name, role, avatar }) => (
-  <Paper sx={{ ...cardSurface, p: 3 }}>
-    <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-      <Avatar src={avatar} alt={name} sx={{ width: 52, height: 52 }} />
-      <Box>
-        <Typography sx={{ fontWeight: 700 }}>{name}</Typography>
-        <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.58)", letterSpacing: "0.24em", textTransform: "uppercase" }}>
-          {role}
-        </Typography>
-      </Box>
-    </Stack>
-    <Typography sx={{ color: "rgba(255,255,255,0.72)", lineHeight: 1.8, flexGrow: 1 }}>
-      "{quote}"
+const EmptyStateCard = ({ message }) => (
+  <Paper sx={{ ...cardSurface, p: 3, minHeight: 220, justifyContent: "center" }}>
+    <Typography sx={{ color: "rgba(255,255,255,0.72)", lineHeight: 1.7 }}>
+      {message}
     </Typography>
-    <Stack direction="row" spacing={0.5} sx={{ mt: 2 }}>
-      {[...Array(5)].map((_, idx) => (
-        <Star key={idx} size={16} fill="currentColor" color="#ffd54f" />
-      ))}
-    </Stack>
   </Paper>
 );
 
 export default function Landing() {
   const [openFaq, setOpenFaq] = useState(0);
+  const [movies, setMovies] = useState([]);
+  const [hallCount, setHallCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLandingData = async () => {
+      try {
+        const [moviesResponse, hallsResponse] = await Promise.all([
+          axios.get(`${API_BASE_URL}/movie/get`, { withCredentials: true }),
+          axios.get(`${API_BASE_URL}/hall/get-active`, { withCredentials: true }),
+        ]);
+
+        if (moviesResponse.data?.success && Array.isArray(moviesResponse.data.data)) {
+          const mappedMovies = moviesResponse.data.data.map((movie) => ({
+            id: movie.id,
+            title: movie.movie_title || movie.title || "Untitled",
+            genre: normalizeTags(movie.genre).join(" | "),
+            runtime: normalizeDuration(movie.duration),
+            image: getMoviePosterUrl(movie.moviePoster),
+            summary: movie.description || movie.summary || "Details coming soon.",
+            releaseDate: movie.releaseDate || null,
+          }));
+          setMovies(mappedMovies);
+        } else {
+          setMovies([]);
+        }
+
+        if (hallsResponse.data?.success && Array.isArray(hallsResponse.data.data)) {
+          setHallCount(hallsResponse.data.data.length);
+        } else {
+          setHallCount(0);
+        }
+      } catch (error) {
+        console.error("Failed to fetch landing page data", error);
+        setMovies([]);
+        setHallCount(0);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLandingData();
+  }, []);
+
+  const today = useMemo(() => new Date(), []);
+
+  const nowShowingMovies = useMemo(
+    () =>
+      movies
+        .filter((movie) => {
+          const releaseDate = normalizeReleaseDate(movie.releaseDate);
+          return !releaseDate || releaseDate <= today;
+        })
+        .slice(0, 6),
+    [movies, today],
+  );
+
+  const featuredMovies = useMemo(() => movies.slice(0, 6), [movies]);
+
+  const comingSoonMovies = useMemo(
+    () =>
+      movies
+        .filter((movie) => {
+          const releaseDate = normalizeReleaseDate(movie.releaseDate);
+          return releaseDate && releaseDate > today;
+        })
+        .sort((a, b) => normalizeReleaseDate(a.releaseDate) - normalizeReleaseDate(b.releaseDate))
+        .slice(0, 3),
+    [movies, today],
+  );
+
+  const heroStats = useMemo(
+    () => [
+      { label: "Movies Available", value: String(movies.length) },
+      { label: "Active Locations", value: String(hallCount) },
+      { label: "Coming Soon", value: String(comingSoonMovies.length) },
+    ],
+    [comingSoonMovies.length, hallCount, movies.length],
+  );
 
   return (
     <Box sx={{ backgroundColor: "#050505", color: "#fff" }}>
@@ -465,7 +407,7 @@ export default function Landing() {
             gap: 3,
           }}
         >
-          {HERO_STATS.map((stat) => (
+          {heroStats.map((stat) => (
             <Paper key={stat.label} sx={{ ...sectionSurface, p: 3.5 }}>
               <Typography variant="h3" sx={{ fontWeight: 900, color: "#fff" }}>
                 {stat.value}
@@ -486,7 +428,7 @@ export default function Landing() {
           <SectionHeading
             eyebrow="Now Showing"
             title="What audiences are booking today"
-            description="A sharper view of what is playing right now, with hand-picked titles that feel current and worth the trip."
+            description="A live look at currently available movies from your catalog."
             actionLabel="Browse movies"
           />
           <Box
@@ -500,9 +442,13 @@ export default function Landing() {
               gap: 3,
             }}
           >
-            {CURRENTLY_IN_CINEMAS.map((movie) => (
-              <MovieCard key={movie.title} {...movie} />
-            ))}
+            {loading ? (
+              <EmptyStateCard message="Loading live movies..." />
+            ) : nowShowingMovies.length > 0 ? (
+              nowShowingMovies.map((movie) => <MovieCard key={movie.id || movie.title} {...movie} />)
+            ) : (
+              <EmptyStateCard message="No currently released movies are available yet." />
+            )}
           </Box>
         </Paper>
       </Container>
@@ -510,9 +456,9 @@ export default function Landing() {
       <Container maxWidth="lg" sx={{ pb: { xs: 6, md: 8 } }}>
         <Paper sx={{ ...sectionSurface, p: { xs: 3, md: 4 } }}>
           <SectionHeading
-            eyebrow="Top 10 Movies This Week"
-            title="Get the critics' and audience favorites"
-            description="These titles are trending and selling out fast. Grab a seat before it's gone."
+            eyebrow="Featured"
+            title="More movies from the current lineup"
+            description="A broader look at titles available across your current catalog."
             actionLabel="See showtimes"
           />
           <Box
@@ -526,72 +472,18 @@ export default function Landing() {
               gap: 3,
             }}
           >
-            {TOP_MOVIES.map((movie) => (
-              <MovieCard key={movie.title} {...movie} />
-            ))}
+            {loading ? (
+              <EmptyStateCard message="Loading featured titles..." />
+            ) : featuredMovies.length > 0 ? (
+              featuredMovies.map((movie) => <MovieCard key={movie.id || movie.title} {...movie} />)
+            ) : (
+              <EmptyStateCard message="No featured movies are available right now." />
+            )}
           </Box>
         </Paper>
       </Container>
 
-      <Container maxWidth="lg" sx={{ pb: { xs: 6, md: 8 } }}>
-        <Paper sx={{ ...sectionSurface, p: { xs: 3, md: 4 } }}>
-          <SectionHeading
-            eyebrow="Coming Soon"
-            title="Plan for the next releases"
-            description="Get ready for premieres and reserve before tickets drop."
-            actionLabel="Pre-register"
-          />
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" },
-              gap: 3,
-            }}
-          >
-            {COMING_SOON.map((movie) => (
-              <Card key={movie.title} sx={{ ...cardSurface, minHeight: 420, overflow: "hidden" }}>
-                <CardMedia component="img" image={movie.image} alt={movie.title} sx={{ height: 250, objectFit: "cover" }} />
-                <CardContent sx={{ p: 3, flexGrow: 1 }}>
-                  <Chip
-                    label={movie.release}
-                    size="small"
-                    sx={{
-                      mb: 2,
-                      borderRadius: 0,
-                      color: "#fff",
-                      border: "1px solid rgba(229,9,20,0.4)",
-                      backgroundColor: "rgba(229,9,20,0.12)",
-                    }}
-                  />
-                  <Typography variant="h5" sx={{ fontWeight: 800, mb: 1.2 }}>
-                    {movie.title}
-                  </Typography>
-                  <Typography sx={{ color: "rgba(255,255,255,0.7)", lineHeight: 1.8 }}>
-                    {movie.summary}
-                  </Typography>
-                </CardContent>
-                <CardActions sx={{ px: 3, pb: 3, pt: 0 }}>
-                  <Button
-                    component={RouterLink}
-                    to="/movies"
-                    variant="outlined"
-                    endIcon={<ArrowRight size={16} />}
-                    sx={{
-                      borderRadius: 0,
-                      color: "#fff",
-                      borderColor: "rgba(255,255,255,0.2)",
-                      textTransform: "none",
-                      fontWeight: 700,
-                    }}
-                  >
-                    Track release
-                  </Button>
-                </CardActions>
-              </Card>
-            ))}
-          </Box>
-        </Paper>
-      </Container>
+     
 
       <Container maxWidth="lg" sx={{ pb: { xs: 6, md: 8 } }}>
         <Paper
@@ -694,31 +586,6 @@ export default function Landing() {
 
       <Container maxWidth="lg" sx={{ pb: { xs: 6, md: 8 } }}>
         <Paper sx={{ ...sectionSurface, p: { xs: 3, md: 4 } }}>
-          <SectionHeading
-            eyebrow="Happy Customers"
-            title="Hear what movie lovers are saying"
-            description="Verified reviews from people booking with Ticketor weekly."
-          />
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: {
-                xs: "1fr",
-                sm: "repeat(2, minmax(0, 1fr))",
-                lg: "repeat(4, minmax(0, 1fr))",
-              },
-              gap: 3,
-            }}
-          >
-            {TESTIMONIALS.map((testimonial) => (
-              <TestimonialCard key={testimonial.name} {...testimonial} />
-            ))}
-          </Box>
-        </Paper>
-      </Container>
-
-      <Container maxWidth="lg" sx={{ pb: { xs: 6, md: 8 } }}>
-        <Paper sx={{ ...sectionSurface, p: { xs: 3, md: 4 } }}>
           <SectionHeading eyebrow="Frequently Asked Questions" title="Answers in seconds" />
           <Stack spacing={2}>
             {FAQS.map((item, index) => (
@@ -761,94 +628,7 @@ export default function Landing() {
       </Container>
 
       <Container maxWidth="md" sx={{ pb: { xs: 7, md: 10 } }}>
-        <Paper
-          sx={{
-            ...sectionSurface,
-            p: { xs: 3, md: 5 },
-            textAlign: "center",
-            background:
-              "linear-gradient(180deg, rgba(24,24,27,0.98) 0%, rgba(9,9,10,0.98) 70%, rgba(58,11,14,0.96) 100%)",
-          }}
-        >
-          <Typography variant="overline" sx={{ color: "rgba(255,255,255,0.6)", letterSpacing: "0.42em" }}>
-            Still have a question?
-          </Typography>
-          <Typography variant="h4" sx={{ mt: 1, fontWeight: 900 }}>
-            Ready to watch and book movies?
-          </Typography>
-          <Typography sx={{ mt: 1.5, color: "rgba(255,255,255,0.68)" }}>
-            Subscribe for early seat drops, reminder texts, and exclusive invites.
-          </Typography>
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={1.5}
-            justifyContent="center"
-            sx={{ mt: 3 }}
-          >
-            {APP_BADGES.map((badge) => (
-              <Paper
-                key={badge.label}
-                sx={{
-                  px: 2.5,
-                  py: 1.4,
-                  borderRadius: 0,
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  backgroundColor: "rgba(255,255,255,0.04)",
-                  color: "#fff",
-                }}
-              >
-                <Stack direction="row" spacing={1.2} alignItems="center">
-                  <Download size={16} />
-                  <Box textAlign="left">
-                    <Typography sx={{ fontWeight: 700, lineHeight: 1.1 }}>{badge.label}</Typography>
-                    <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.62)" }}>
-                      {badge.detail}
-                    </Typography>
-                  </Box>
-                </Stack>
-              </Paper>
-            ))}
-          </Stack>
-          <Divider sx={{ my: 3, borderColor: "rgba(255,255,255,0.08)" }} />
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-            <TextField
-              fullWidth
-              placeholder="Enter your email"
-              variant="outlined"
-              InputProps={{
-                sx: {
-                  borderRadius: 0,
-                  color: "#fff",
-                  backgroundColor: "rgba(255,255,255,0.04)",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "rgba(255,255,255,0.18)",
-                  },
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "rgba(255,255,255,0.3)",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#e50914",
-                  },
-                },
-              }}
-            />
-            <Button
-              variant="contained"
-              sx={{
-                borderRadius: 0,
-                minWidth: { sm: 170 },
-                px: 3.5,
-                py: 1.7,
-                backgroundColor: "#e50914",
-                fontWeight: 800,
-                textTransform: "none",
-                "&:hover": { backgroundColor: "#c80811" },
-              }}
-            >
-              Sign up
-            </Button>
-          </Stack>
-        </Paper>
+     
       </Container>
     </Box>
   );
