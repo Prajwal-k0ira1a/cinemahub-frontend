@@ -288,7 +288,7 @@ export default function HallAdminMessages() {
               bgcolor: "background.paper",
             }}
           >
-            <Box px={3} py={2.5} borderBottom="1px solid" borderColor="divider">
+            <Box px={3} py={7} borderBottom="1px solid" borderColor="divider">
               <Typography variant="subtitle1" fontWeight={800} color="text.primary">
                 Messages
               </Typography>
@@ -391,8 +391,8 @@ export default function HallAdminMessages() {
           {/* Chat pane */}
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: 0 }}>
             <Box
-              px={3}
-              py={2}
+              px={4}
+              py={6}
               borderBottom="1px solid"
               borderColor="divider"
               bgcolor="background.paper"
