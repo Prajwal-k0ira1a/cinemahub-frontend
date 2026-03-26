@@ -36,6 +36,24 @@ import damakImg from "../../assets/location/damak.png";
 import lumbiniImg from "../../assets/location/lumbini.png";
 import birgunjImg from "../../assets/location/birgunj.png";
 import logo from "../../assets/logo.svg";
+
+const getProfileInitials = (name) => {
+  const parts = String(name || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (parts.length >= 2) {
+    return `${parts[0][0] || ""}${parts[1][0] || ""}`.toUpperCase();
+  }
+
+  if (parts.length === 1) {
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+
+  return "PR";
+};
+
 const NAV_ITEMS = [
   { to: "/", label: "Home", end: true },
   { to: "/movies", label: "Movies" },
@@ -581,10 +599,7 @@ const Navbar = () => {
     return "Profile";
   }, [user]);
 
-  const profileInitial = useMemo(
-    () => (displayName?.trim()?.[0] || "P").toUpperCase(),
-    [displayName],
-  );
+  const profileInitial = useMemo(() => getProfileInitials(displayName), [displayName]);
 
   const unreadCount = useMemo(
     () => notifications.filter((item) => !item?.isRead).length,

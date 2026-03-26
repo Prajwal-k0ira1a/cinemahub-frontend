@@ -31,7 +31,6 @@ import {
 import axios from "axios";
 import QRCode from "qrcode";
 import { jsPDF } from "jspdf";
-import avatar from "../../../assets/avatar.png";
 import { useAuth } from "../../../shared/hooks/useAuth.js";
 import { API_BASE_URL, API_SERVER_URL } from "../../../shared/config/api.js";
 
@@ -85,6 +84,23 @@ const getTicketQrPayload = (ticket) =>
     venue: ticket.venue || "",
     seat: ticket.seatLabel || "",
   });
+
+const getInitials = (name) => {
+  const parts = String(name || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (parts.length >= 2) {
+    return `${parts[0][0] || ""}${parts[1][0] || ""}`.toUpperCase();
+  }
+
+  if (parts.length === 1) {
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+
+  return "GU";
+};
 
 const toDataUrl = async (url) => {
   const response = await fetch(url);
@@ -297,6 +313,8 @@ const Profile = () => {
     if (user?.email) return user.email.split("@")[0];
     return "Guest User";
   }, [user]);
+
+  const profileInitials = useMemo(() => getInitials(displayName), [displayName]);
 
   const selectedCity = useMemo(() => {
     try {
@@ -529,10 +547,18 @@ const Profile = () => {
               >
                 <Stack direction="row" spacing={2} alignItems="center" sx={{ minWidth: 0 }}>
                   <Avatar
-                    src={avatar}
-                    alt="User avatar"
-                    sx={{ width: 72, height: 72, border: "1px solid rgba(255,255,255,0.12)" }}
-                  />
+                    sx={{
+                      width: 72,
+                      height: 72,
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      bgcolor: "#e50914",
+                      color: "#fff",
+                      fontSize: 24,
+                      fontWeight: 900,
+                    }}
+                  >
+                    {profileInitials}
+                  </Avatar>
                   <Box sx={{ minWidth: 0 }}>
                     <Typography sx={{ fontSize: { xs: 22, md: 26 }, fontWeight: 800, color: "#fff" }}>
                       {displayName}
