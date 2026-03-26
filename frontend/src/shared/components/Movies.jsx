@@ -301,8 +301,8 @@ const Movies = () => {
 
   return (
     <section className="pb-8 pt-2 sm:pt-3">
-      <div className="container mx-auto px-4 sm:px-6">
-        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2.5 }}>
+      <Box sx={{ px: { xs: 2, sm: 3 }, mb: 2.5 }}>
+        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
           <Box sx={{ width: "100%", maxWidth: { xs: "100%", md: 360 } }}>
             <TextField
               value={search}
@@ -342,7 +342,9 @@ const Movies = () => {
             />
           </Box>
         </Box>
+      </Box>
 
+      <div className="container mx-auto px-4 sm:px-6">
         {loading ? (
           <Paper
             sx={{
