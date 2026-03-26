@@ -47,6 +47,64 @@ const formatDateTime = (showDate, startTime) => {
 
 const formatCurrency = (amount) => `Rs. ${Number(amount || 0).toFixed(2)}`;
 
+const toNumber = (value) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const normalizeSeatList = (value) => {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  if (typeof value === "string") {
+    return value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+  return [];
+};
+
+const getSeatCount = (bookingSummary, booking, tickets) => {
+  const summaryCount = toNumber(bookingSummary?.seatCount);
+  if (summaryCount > 0) return summaryCount;
+
+  const explicitCount = toNumber(
+    booking?.seat_count ??
+      booking?.seatCount ??
+      booking?.ticket_count ??
+      booking?.ticketCount ??
+      booking?.quantity,
+  );
+  if (explicitCount > 0) return explicitCount;
+
+  const bookingSeats = normalizeSeatList(
+    booking?.selectedSeats ??
+      booking?.selected_seats ??
+      booking?.seat_numbers ??
+      booking?.seatNumbers ??
+      booking?.seats,
+  );
+  if (bookingSeats.length > 0) return bookingSeats.length;
+
+  return tickets.length;
+};
+
+const getBookingTotal = (bookingSummary, booking, tickets) => {
+  const summaryTotal = toNumber(bookingSummary?.totalAmount);
+  if (summaryTotal > 0) return summaryTotal;
+
+  const explicitTotal = toNumber(
+    booking?.total_amount ??
+      booking?.totalAmount ??
+      booking?.amount ??
+      booking?.price ??
+      booking?.grand_total ??
+      booking?.grandTotal,
+  );
+  if (explicitTotal > 0) return explicitTotal;
+
+  return tickets.reduce((sum, ticket) => sum + toNumber(ticket.price), 0);
+};
+
 const getTicketQrPayload = (ticket, movieTitle, hallName, when) =>
   JSON.stringify({
     ticket_id: ticket.id || "",
@@ -67,6 +125,7 @@ const slideTransition = {
 
 export default function TicketGeneratedModal({ open, payload, onClose }) {
   const booking = payload?.booking || {};
+  const bookingSummary = payload?.bookingSummary || {};
   const showtime = payload?.showtime || {};
   const tickets = Array.isArray(payload?.tickets) ? payload.tickets : [];
   const hasTickets = tickets.length > 0;
@@ -74,7 +133,8 @@ export default function TicketGeneratedModal({ open, payload, onClose }) {
   const hallName = showtime.Hallroom?.Hall?.hall_name || "Cinema Hall";
   const roomName = showtime.Hallroom?.roomName || "Room";
   const when = formatDateTime(showtime.show_date, showtime.start_time);
-  const total = tickets.reduce((sum, ticket) => sum + Number(ticket.price || 0), 0);
+  const total = getBookingTotal(bookingSummary, booking, tickets);
+  const seatCount = getSeatCount(bookingSummary, booking, tickets);
 
   const [activeStep, setActiveStep] = useState(hasTickets ? 1 : 0);
 
@@ -276,7 +336,7 @@ export default function TicketGeneratedModal({ open, payload, onClose }) {
                       </Stack>
                       <Stack direction="row" spacing={1.25} alignItems="center">
                         <Ticket size={16} color="#e50914" />
-                        <Typography>{tickets.length || 0} seat{tickets.length === 1 ? "" : "s"} reserved</Typography>
+                        <Typography>{seatCount} seat{seatCount === 1 ? "" : "s"} reserved</Typography>
                       </Stack>
                     </Stack>
                 </Paper>

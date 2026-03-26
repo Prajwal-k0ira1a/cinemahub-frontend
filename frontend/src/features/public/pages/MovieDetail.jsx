@@ -237,7 +237,14 @@ export default function MovieDetail() {
       );
       if (response.data?.success) {
         toast.success("Booking created. Complete payment to generate tickets.");
-        setGeneratedTicketPayload(response.data?.data || null);
+        setGeneratedTicketPayload({
+          ...(response.data?.data || {}),
+          bookingSummary: {
+            seatCount: normalizedSeatIds.length,
+            seatLabels: selectedSeatObjects.map((seat) => seat.seat_number).filter(Boolean),
+            totalAmount: ticketTotal,
+          },
+        });
         closeBookingModal();
       }
     } catch (err) {
