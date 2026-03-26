@@ -18,9 +18,9 @@ import {
   Paper,
   Stack,
   TextField,
-  Typography
+  Typography,
 } from "@mui/material";
-import { MoreHorizontal, Search, Send, MessageSquare ,Grid2X2} from "lucide-react";
+import { MoreHorizontal, Search, MessageSquare } from "lucide-react";
 import { API_BASE_URL, API_SERVER_URL } from "../../../shared/config/api.js";
 import { useAuth } from "../../../shared/hooks/useAuth.js";
 
@@ -246,13 +246,23 @@ export default function HallAdminMessages() {
   };
 
   return (
-    <Box sx={{ width: "100%", height: "100%", p: { xs: 2, md: 3 } }}>
+    <Box
+      sx={{
+        width: "100%",
+        height: { xs: "calc(100vh - 108px)", md: "calc(100vh - 92px)" },
+        maxHeight: { xs: "calc(100vh - 108px)", md: "calc(100vh - 92px)" },
+        pt: { xs: 3, md: 5 },
+        px: { xs: 2, md: 3 },
+        pb: { xs: 2, md: 3 },
+      }}
+    >
       <Paper
         elevation={0}
         sx={{
           height: "100%",
           minHeight: 0,
-          borderRadius: { xs: 2, md: 0 },
+          maxHeight: "100%",
+          borderRadius: { xs: 2, md: 2 },
           border: "1px solid",
           borderColor: "divider",
           overflow: "hidden",
@@ -279,10 +289,10 @@ export default function HallAdminMessages() {
             }}
           >
             <Box px={3} py={2.5} borderBottom="1px solid" borderColor="divider">
-              <Typography variant="subtitle1" fontWeight={800}>
+              <Typography variant="subtitle1" fontWeight={800} color="text.primary">
                 Messages
               </Typography>
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.25 }}>
                 User chats for your halls
               </Typography>
               <Box mt={1.5}>
@@ -390,21 +400,47 @@ export default function HallAdminMessages() {
               alignItems="center"
               justifyContent="space-between"
               gap={2}
+              minHeight={80}
             >
               <Stack direction="row" spacing={1.5} alignItems="center">
-                {selectedConversation ? renderAvatar(selectedConversation.user?.fullname || selectedConversation.user?.email || "User") : null}
-                <Box>
-                  <Typography variant="subtitle1" fontWeight={700}>
+                {selectedConversation ? renderAvatar(selectedConversation.user?.fullname || selectedConversation.user?.email || "User") : (
+                  <Avatar
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      bgcolor: "rgba(229,9,20,0.14)",
+                      color: "primary.main",
+                      border: "1px solid",
+                      borderColor: "rgba(229,9,20,0.35)",
+                    }}
+                  >
+                    <MessageSquare size={20} />
+                  </Avatar>
+                )}
+                <Box sx={!selectedConversation ? { mt: 1 } : undefined}>
+                  <Typography variant="subtitle1" fontWeight={700} color="text.primary">
                     {selectedConversation
                       ? selectedConversation.user?.fullname || selectedConversation.user?.email || "User"
-                      : "Select a conversation"}
+                      : "Messages"}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.25 }}>
                     {selectedConversation?.Hall?.hall_name || "—"}
                   </Typography>
+                  {!selectedConversation ? (
+                    <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
+                      Select a conversation to start replying
+                    </Typography>
+                  ) : null}
                 </Box>
               </Stack>
-              <IconButton>
+              <IconButton
+                sx={{
+                  color: "text.primary",
+                  border: "1px solid",
+                  borderColor: "divider",
+                  bgcolor: "rgba(255,255,255,0.03)",
+                }}
+              >
                 <MoreHorizontal size={18} />
               </IconButton>
             </Box>
