@@ -42,6 +42,7 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 import LocationPickerMap from "../../../shared/components/LocationPickerMap.jsx";
 import { API_BASE_URL, API_SERVER_URL } from "../../../shared/config/api";
+import { useAuth } from "../../../shared/hooks/useAuth.js";
 
 const createRoom = () => ({
   roomName: "",
@@ -86,7 +87,25 @@ const normalizeRoomList = (hallrooms = []) => {
   }));
 };
 
+const fetchHallrooms = async () => {
+  try {
+    return await axios.get(`${API_BASE_URL}/hallroom/get`, {
+      withCredentials: true,
+    });
+  } catch (error) {
+    if (error.response?.status !== 404) {
+      throw error;
+    }
+
+    return axios.get(`${API_BASE_URL}/hall-room/get`, {
+      withCredentials: true,
+    });
+  }
+};
+
 const Halls = () => {
+  const { user } = useAuth();
+  const isHallAdmin = user?.role === "hall-admin";
   const [halls, setHalls] = useState([]);
   const [hallRooms, setHallRooms] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -103,7 +122,8 @@ const Halls = () => {
 
   useEffect(() => {
     fetchHalls();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHallAdmin]);
 
   const totalCapacity = useMemo(
     () =>
@@ -118,12 +138,10 @@ const Halls = () => {
     try {
       setLoading(true);
       const [hallsResponse, hallRoomsResponse] = await Promise.all([
-        axios.get(`${API_BASE_URL}/hall/get-Active`, {
+        axios.get(`${API_BASE_URL}${isHallAdmin ? "/hall/get" : "/hall/get-active"}`, {
           withCredentials: true,
         }),
-        axios.get(`${API_BASE_URL}/hall-room/get`, {
-          withCredentials: true,
-        }),
+        fetchHallrooms(),
       ]);
 
       if (hallsResponse.data.success) {
@@ -204,7 +222,9 @@ const Halls = () => {
     data.append("hall_name", formData.hall_name);
     data.append("hall_location", formData.hall_location);
     data.append("hall_contact", formData.hall_contact);
-    data.append("license", formData.license);
+    if (!editingHall || !isHallAdmin) {
+      data.append("license", formData.license);
+    }
     if (formData.hallPoster) data.append("hallPoster", formData.hallPoster);
 
     try {
@@ -329,12 +349,16 @@ const Halls = () => {
     <Container maxWidth="lg" sx={{ py: 3 }}>
       <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems={{ xs: "flex-start", sm: "center" }} justifyContent="space-between" mb={2.5}>
         <Box>
-          <Typography variant="h4" fontWeight={700}>Halls</Typography>
-          <Typography variant="body2" color="text.secondary" mt={0.5}>Manage your cinema halls</Typography>
+          <Typography variant="h4" fontWeight={700}>{isHallAdmin ? "My Hall" : "Halls"}</Typography>
+          <Typography variant="body2" color="text.secondary" mt={0.5}>
+            {isHallAdmin ? "Manage the hall assigned to your hall admin account" : "Manage your cinema halls"}
+          </Typography>
         </Box>
-        <Button variant="contained" size="small" startIcon={<Plus size={16} />} onClick={openCreateModal}>
-          Add Hall
-        </Button>
+        {!isHallAdmin ? (
+          <Button variant="contained" size="small" startIcon={<Plus size={16} />} onClick={openCreateModal}>
+            Add Hall
+          </Button>
+        ) : null}
       </Stack>
 
       <Paper sx={{ p: 1.5, mb: 2.5, border: "1px solid", borderColor: "divider" }} elevation={0}>
@@ -492,29 +516,31 @@ const Halls = () => {
                         >
                           Edit Hall
                         </Button>
-                        {hall.isActive ? (
-                          <Button
-                            size="small"
-                            color="error"
-                            variant="outlined"
-                            startIcon={<Trash2 size={14} />}
-                            onClick={() => setDeactivateTarget({ id: hall.id, name: hall.hall_name })}
-                            sx={{ px: 1.5, flex: 1, borderRadius: 1 }}
-                          >
-                            Deactivate
-                          </Button>
-                        ) : (
-                          <Button
-                            size="small"
-                            color="success"
-                            variant="outlined"
-                            startIcon={<CheckCircle2 size={14} />}
-                            onClick={() => handleActivate(hall)}
-                            sx={{ px: 1.5, flex: 1, borderRadius: 1 }}
-                          >
-                            Activate
-                          </Button>
-                        )}
+                        {!isHallAdmin ? (
+                          hall.isActive ? (
+                            <Button
+                              size="small"
+                              color="error"
+                              variant="outlined"
+                              startIcon={<Trash2 size={14} />}
+                              onClick={() => setDeactivateTarget({ id: hall.id, name: hall.hall_name })}
+                              sx={{ px: 1.5, flex: 1, borderRadius: 1 }}
+                            >
+                              Deactivate
+                            </Button>
+                          ) : (
+                            <Button
+                              size="small"
+                              color="success"
+                              variant="outlined"
+                              startIcon={<CheckCircle2 size={14} />}
+                              onClick={() => handleActivate(hall)}
+                              sx={{ px: 1.5, flex: 1, borderRadius: 1 }}
+                            >
+                              Activate
+                            </Button>
+                          )
+                        ) : null}
                       </Stack>
                     </CardContent>
                   </Card>
@@ -578,6 +604,8 @@ const Halls = () => {
                     fullWidth
                     value={formData.license}
                     onChange={handleInputChange}
+                    disabled={isHallAdmin && Boolean(editingHall)}
+                    helperText={isHallAdmin && editingHall ? "Hall admins can view license details but cannot change them." : ""}
                     required
                   />
                 </Grid>

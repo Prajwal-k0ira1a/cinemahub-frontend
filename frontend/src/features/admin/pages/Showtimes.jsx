@@ -50,6 +50,18 @@ const defaultStartTime = () => {
   return `${hour}:${minute === "60" ? "00" : minute}`;
 };
 
+const fetchHallrooms = async () => {
+  try {
+    return await axios.get(`${API_BASE_URL}/hallroom/get`, { withCredentials: true });
+  } catch (error) {
+    if (error.response?.status !== 404) {
+      throw error;
+    }
+
+    return axios.get(`${API_BASE_URL}/hall-room/get`, { withCredentials: true });
+  }
+};
+
 const Showtimes = () => {
   const { isAuthenticated, loading: authLoading, user } = useAuth();
   const [movies, setMovies] = useState([]);
@@ -85,7 +97,7 @@ const Showtimes = () => {
     try {
       const [moviesRes, roomsRes] = await Promise.all([
         axios.get(`${API_BASE_URL}/movie/get`, { withCredentials: true }),
-        axios.get(`${API_BASE_URL}/hall-room/get`, { withCredentials: true }),
+        fetchHallrooms(),
       ]);
 
       const moviesData = moviesRes.data?.success ? moviesRes.data.data || [] : [];

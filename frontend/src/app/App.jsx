@@ -27,6 +27,7 @@ import User from "../features/admin/pages/User.jsx";
 import FormApplications from "../features/admin/pages/FormApplications.jsx";
 import Showtimes from "../features/admin/pages/Showtimes.jsx";
 import HallAdminDashboard from "../features/halladmin/pages/Dashboard.jsx";
+import HallAdminHalls from "../features/halladmin/pages/Halls.jsx";
 import HallAdminMessages from "../features/halladmin/pages/Messages.jsx";
 import SeatLayoutPreview from "../features/halladmin/components/SeatLayoutPreview.jsx";
 import { AuthProvider } from "../shared/context/AuthContext.jsx";
@@ -126,7 +127,7 @@ const App = () => {
             <Route path="/halladmin" element={<HallAdminLayout />}>
               <Route index element={<HallAdminDashboard />} />
               <Route path="movies" element={<Movies />} />
-              <Route path="halls" element={<Halls />} />
+              <Route path="halls" element={<HallAdminHalls />} />
               <Route path="showtimes" element={<Showtimes />} />
               <Route path="messages" element={<HallAdminMessages />} />
             </Route>
