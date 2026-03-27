@@ -58,6 +58,39 @@ const getPosterUrl = (poster) => {
   return `${API_SERVER_URL}/uploads/${poster}`;
 };
 
+const FALLBACK_TICKET_POSTER = "https://placehold.co/600x900?text=No+Poster";
+
+const getTicketMovieDetails = (ticket) => {
+  const showtime = ticket?.Showtime || ticket?.showtime || ticket?.Booking?.Showtime || ticket?.booking?.Showtime || {};
+  const movie =
+    showtime?.Movie ||
+    showtime?.movie ||
+    ticket?.Movie ||
+    ticket?.movie ||
+    ticket?.Booking?.Movie ||
+    ticket?.booking?.Movie ||
+    {};
+
+  return {
+    title:
+      movie?.movie_title ||
+      movie?.title ||
+      showtime?.movie_title ||
+      showtime?.title ||
+      ticket?.movie_title ||
+      ticket?.title ||
+      "Movie",
+    poster:
+      movie?.moviePoster ||
+      movie?.poster ||
+      showtime?.moviePoster ||
+      showtime?.poster ||
+      ticket?.moviePoster ||
+      ticket?.poster ||
+      "",
+  };
+};
+
 const formatTime = (value) => String(value || "").slice(0, 5);
 
 const formatTicketDateTime = (showDate, startTime) => {
@@ -155,6 +188,10 @@ const TicketRow = ({ ticket, ticketQrMap, onDownloadTicket }) => (
           component="img"
           src={ticket.poster}
           alt={`${ticket.title} poster`}
+          onError={(event) => {
+            event.currentTarget.onerror = null;
+            event.currentTarget.src = FALLBACK_TICKET_POSTER;
+          }}
           sx={{
             width: { xs: 62, md: 72 },
             height: { xs: 92, md: 104 },
@@ -353,6 +390,7 @@ const Profile = () => {
         const startTime = formatTime(ticket.Showtime?.start_time);
         const d = showDate ? new Date(`${showDate}T${startTime || "00:00"}:00`) : null;
         const isUpcoming = d && !Number.isNaN(d.getTime()) ? d.getTime() >= Date.now() : false;
+        const movieDetails = getTicketMovieDetails(ticket);
 
         let status = isUpcoming ? "Upcoming" : "Completed";
         const bookingStatus = ticket.Booking?.booking_status || "confirmed";
@@ -364,11 +402,11 @@ const Profile = () => {
 
         return {
           id: ticket.id,
-          title: ticket.Showtime?.Movie?.movie_title || "Movie",
+          title: movieDetails.title,
           dateTime: formatTicketDateTime(showDate, ticket.Showtime?.start_time),
           venue: `${ticket.Showtime?.Hallroom?.Hall?.hall_name || "Cinema Hall"}  -  ${ticket.Showtime?.Hallroom?.roomName || "Room"}`,
           seats: `Seat: ${seatLabel}  -  Code: ${codeLabel}`,
-          poster: getPosterUrl(ticket.Showtime?.Movie?.moviePoster),
+          poster: getPosterUrl(movieDetails.poster),
           bookingStatus,
           status,
           showDate,
