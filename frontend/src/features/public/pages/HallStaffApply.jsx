@@ -33,6 +33,7 @@ import { useAuth } from "../../../shared/hooks/useAuth.js";
 import LocationPickerMap from "../../../shared/components/LocationPickerMap.jsx";
 
 const steps = ["Details", "Location", "Hallrooms", "Seat Layout"];
+const HALL_LOCATION_MAX_LENGTH = 250;
 
 const initialHall = {
   hall_name: "",
@@ -51,6 +52,12 @@ const createRoom = () => ({
 });
 
 const seatKey = (rowIndex, seatIndex) => `${rowIndex}-${seatIndex}`;
+
+const normalizeHallLocation = (value) =>
+  String(value || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, HALL_LOCATION_MAX_LENGTH);
 
 const HallStaffApply = () => {
   const { user, isAuthenticated, loading } = useAuth();
@@ -83,6 +90,10 @@ const HallStaffApply = () => {
     const limited = afterPrefix.slice(0, 8);
     const formatted = limited.length ? `091-${limited}` : "091-";
     updateHall({ license: formatted });
+  };
+
+  const handleLocationChange = (value) => {
+    updateHall({ hall_location: normalizeHallLocation(value) });
   };
 
   const addRoom = () => setRooms((prev) => [...prev, createRoom()]);
@@ -160,6 +171,7 @@ const HallStaffApply = () => {
     try {
       const payload = {
         ...hall,
+        hall_location: normalizeHallLocation(hall.hall_location),
         hallrooms: rooms,
         totalCapacity,
       };
@@ -324,7 +336,9 @@ const HallStaffApply = () => {
             <TextField
               label="Location"
               value={hall.hall_location}
-              onChange={(e) => updateHall({ hall_location: e.target.value })}
+              onChange={(e) => handleLocationChange(e.target.value)}
+              inputProps={{ maxLength: HALL_LOCATION_MAX_LENGTH }}
+              helperText={`${hall.hall_location.length}/${HALL_LOCATION_MAX_LENGTH}`}
               InputLabelProps={{ shrink: true }}
               fullWidth
               sx={{ "& .MuiOutlinedInput-root": { backgroundColor: "rgba(255,255,255,0.07)" } }}
@@ -332,7 +346,7 @@ const HallStaffApply = () => {
             <Box height={360} borderRadius={2} overflow="hidden" border="1px solid rgba(255,255,255,0.1)">
               <LocationPickerMap
                 locationValue={hall.hall_location}
-                onLocationSelect={(val) => updateHall({ hall_location: val })}
+                onLocationSelect={handleLocationChange}
               />
             </Box>
           </Stack>
