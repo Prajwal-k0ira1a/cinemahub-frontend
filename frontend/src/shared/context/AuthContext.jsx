@@ -41,9 +41,21 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(true);
       }
     } catch (error) {
-      // Token expired or invalid, user not authenticated
-      setUser(null);
-      setIsAuthenticated(false);
+      const status = error?.response?.status;
+
+      if (status === 401 || status === 403) {
+        // Only clear the session when the server explicitly says auth is invalid.
+        setUser(null);
+        setIsAuthenticated(false);
+        clearStoredToken();
+      } else {
+        // Preserve the existing auth state for server/config issues like 404.
+        console.error("Auth status check failed:", {
+          status,
+          url: `${API_BASE_URL}/user/me`,
+          message: error?.response?.data?.message || error?.message,
+        });
+      }
     } finally {
       setLoading(false);
     }
