@@ -1,4 +1,4 @@
-export const HALL_LOCATION_MAX_LENGTH = 100;
+export const HALL_LOCATION_MAX_LENGTH = 250;
 
 export const normalizeHallLocation = (value) =>
   String(value || "")
