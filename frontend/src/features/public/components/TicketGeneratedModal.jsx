@@ -52,6 +52,57 @@ const toNumber = (value) => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
+const REQUIRED_ESEWA_FIELDS = [
+  "amount",
+  "tax_amount",
+  "total_amount",
+  "transaction_uuid",
+  "product_code",
+  "product_service_charge",
+  "product_delivery_charge",
+  "success_url",
+  "failure_url",
+  "signed_field_names",
+  "signature",
+];
+
+const validateEsewaSubmission = (paymentUrl, payload) => {
+  if (!paymentUrl) {
+    return "Payment URL not returned by server";
+  }
+
+  let parsedUrl;
+  try {
+    parsedUrl = new URL(paymentUrl);
+  } catch (_) {
+    return "Invalid payment URL returned by server";
+  }
+
+  const allowedHosts = ["rc-epay.esewa.com.np", "epay.esewa.com.np"];
+  if (!allowedHosts.includes(parsedUrl.host)) {
+    return "Unexpected eSewa host returned by server";
+  }
+
+  if (!parsedUrl.pathname.endsWith("/api/epay/main/v2/form")) {
+    return "Unexpected eSewa form path returned by server";
+  }
+
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    return "Payment payload not returned by server";
+  }
+
+  const missingFields = REQUIRED_ESEWA_FIELDS.filter((field) => {
+    const value = payload[field];
+    return value === null || value === undefined || String(value).trim() === "";
+  });
+
+  if (missingFields.length > 0) {
+    return `Missing eSewa fields: ${missingFields.join(", ")}`;
+  }
+
+  return null;
+};
+
 const normalizeSeatList = (value) => {
   if (Array.isArray(value)) return value.filter(Boolean);
   if (typeof value === "string") {
@@ -163,11 +214,17 @@ export default function TicketGeneratedModal({ open, payload, onClose }) {
         localStorage.setItem("esewa_transaction_uuid", String(transactionUuid));
       }
 
-      const paymentUrl = res?.data?.paymentUrl || res?.data?.url?.split("?")[0];
+      const paymentUrl = res?.data?.paymentUrl || res?.data?.url;
       const paymentPayload = res?.data?.payload;
 
-      if (!paymentUrl || !paymentPayload || typeof paymentPayload !== "object") {
-        toast.error("Payment payload not returned by server");
+      const validationError = validateEsewaSubmission(paymentUrl, paymentPayload);
+      if (validationError) {
+        console.error("Invalid eSewa initiation response", {
+          paymentUrl,
+          paymentPayload,
+          response: res,
+        });
+        toast.error(validationError);
         return;
       }
 
