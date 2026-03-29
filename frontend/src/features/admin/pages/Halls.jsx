@@ -43,6 +43,10 @@ import { toast } from "react-hot-toast";
 import LocationPickerMap from "../../../shared/components/LocationPickerMap.jsx";
 import { API_BASE_URL, API_SERVER_URL } from "../../../shared/config/api";
 import { useAuth } from "../../../shared/hooks/useAuth.js";
+import {
+  HALL_LOCATION_MAX_LENGTH,
+  normalizeHallLocation,
+} from "../../../shared/utils/hallLocation.js";
 
 const createRoom = () => ({
   roomName: "",
@@ -160,7 +164,10 @@ const Halls = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === "hall_location" ? normalizeHallLocation(value) : value,
+    }));
   };
 
   const handleFileChange = (e) => {
@@ -220,7 +227,7 @@ const Halls = () => {
     setError("");
     const data = new FormData();
     data.append("hall_name", formData.hall_name);
-    data.append("hall_location", formData.hall_location);
+    data.append("hall_location", normalizeHallLocation(formData.hall_location));
     data.append("hall_contact", formData.hall_contact);
     if (!editingHall || !isHallAdmin) {
       data.append("license", formData.license);
@@ -643,6 +650,8 @@ const Halls = () => {
                   fullWidth
                   value={formData.hall_location}
                   onChange={handleInputChange}
+                  inputProps={{ maxLength: HALL_LOCATION_MAX_LENGTH }}
+                  helperText={`${formData.hall_location.length}/${HALL_LOCATION_MAX_LENGTH}`}
                   required
                   sx={{ mb: 2 }}
                 />
@@ -650,7 +659,10 @@ const Halls = () => {
                   key={`${editingHall ? "edit" : "create"}-${showModal ? "open" : "closed"}`}
                   locationValue={formData.hall_location}
                   onLocationSelect={(nextLocation) =>
-                    setFormData((prev) => ({ ...prev, hall_location: nextLocation }))
+                    setFormData((prev) => ({
+                      ...prev,
+                      hall_location: normalizeHallLocation(nextLocation),
+                    }))
                   }
                 />
               </Box>

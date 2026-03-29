@@ -31,9 +31,12 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { API_BASE_URL } from "../../../shared/config/api.js";
 import { useAuth } from "../../../shared/hooks/useAuth.js";
 import LocationPickerMap from "../../../shared/components/LocationPickerMap.jsx";
+import {
+  HALL_LOCATION_MAX_LENGTH,
+  normalizeHallLocation,
+} from "../../../shared/utils/hallLocation.js";
 
 const steps = ["Details", "Location", "Hallrooms", "Seat Layout"];
-const HALL_LOCATION_MAX_LENGTH = 250;
 
 const initialHall = {
   hall_name: "",
@@ -52,12 +55,6 @@ const createRoom = () => ({
 });
 
 const seatKey = (rowIndex, seatIndex) => `${rowIndex}-${seatIndex}`;
-
-const normalizeHallLocation = (value) =>
-  String(value || "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, HALL_LOCATION_MAX_LENGTH);
 
 const HallStaffApply = () => {
   const { user, isAuthenticated, loading } = useAuth();

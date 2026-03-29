@@ -24,6 +24,7 @@ import {
 } from "@mui/material";
 import { createTheme, styled, ThemeProvider } from "@mui/material/styles";
 import apiClient, { API_SERVER_URL } from "../../../shared/config/api";
+import { HALL_LOCATION_MAX_LENGTH } from "../../../shared/utils/hallLocation.js";
 
 const FormApplications = () => {
   const [applications, setApplications] = useState([]);
@@ -47,6 +48,16 @@ const FormApplications = () => {
   };
 
   const handleApproveApplication = async (id) => {
+    const application = applications.find((entry) => entry.id === id);
+    const hallLocation = String(application?.hall_location || "").trim();
+
+    if (hallLocation.length > HALL_LOCATION_MAX_LENGTH) {
+      toast.error(
+        `Hall location is ${hallLocation.length} characters. Please shorten it to ${HALL_LOCATION_MAX_LENGTH} characters or less before approval.`,
+      );
+      return;
+    }
+
     setSubmittingId(id);
     try {
       await apiClient.put(`/hall/applications/${id}/approve`, {});
