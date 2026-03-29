@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
   Armchair,
@@ -63,6 +63,7 @@ const HallStaffApply = () => {
   const [hall, setHall] = useState(initialHall);
   const [rooms, setRooms] = useState([createRoom()]);
   const [seatBrush, setSeatBrush] = useState("regular");
+  const [hallPosterPreview, setHallPosterPreview] = useState("");
 
   const totalCapacity = useMemo(
     () =>
@@ -72,7 +73,18 @@ const HallStaffApply = () => {
       }, 0),
     [rooms],
   );
-  
+
+  useEffect(() => {
+    if (!hall.hallPoster || typeof hall.hallPoster === "string") {
+      setHallPosterPreview("");
+      return undefined;
+    }
+
+    const previewUrl = URL.createObjectURL(hall.hallPoster);
+    setHallPosterPreview(previewUrl);
+
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [hall.hallPoster]);
 
   const updateHall = (patch) => setHall((prev) => ({ ...prev, ...patch }));
 
@@ -166,15 +178,23 @@ const HallStaffApply = () => {
       localStorage.getItem("authToken");
     setSubmitting(true);
     try {
-      const payload = {
-        ...hall,
-        hall_location: normalizeHallLocation(hall.hall_location),
-        hallrooms: rooms,
-        totalCapacity,
-      };
-      const response = await axios.post(`${API_BASE_URL}/hall/apply`, payload, {
+      const data = new FormData();
+      data.append("hall_name", hall.hall_name);
+      data.append("hall_location", normalizeHallLocation(hall.hall_location));
+      data.append("hall_contact", hall.hall_contact);
+      data.append("license", hall.license);
+      data.append("hallrooms", JSON.stringify(rooms));
+      data.append("totalCapacity", String(totalCapacity));
+      if (hall.hallPoster) {
+        data.append("hallPoster", hall.hallPoster);
+      }
+
+      const response = await axios.post(`${API_BASE_URL}/hall/apply`, data, {
         withCredentials: true,
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          "Content-Type": "multipart/form-data",
+        },
       });
       if (response.data.success) {
         toast.success("Application submitted");
@@ -320,9 +340,25 @@ const HallStaffApply = () => {
                 />
               </Button>
               {hall.hallPoster && (
-                <Typography variant="caption" color="#cbd5e1">
-                  {hall.hallPoster.name || hall.hallPoster}
-                </Typography>
+                <Stack spacing={1} sx={{ mt: 1 }}>
+                  <Typography variant="caption" color="#cbd5e1">
+                    {hall.hallPoster.name || hall.hallPoster}
+                  </Typography>
+                  {hallPosterPreview && (
+                    <Box
+                      component="img"
+                      src={hallPosterPreview}
+                      alt="Hall poster preview"
+                      sx={{
+                        width: "100%",
+                        maxHeight: 220,
+                        objectFit: "cover",
+                        borderRadius: 2,
+                        border: "1px solid rgba(255,255,255,0.12)",
+                      }}
+                    />
+                  )}
+                </Stack>
               )}
             </Grid>
           </Grid>
