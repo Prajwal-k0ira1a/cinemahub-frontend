@@ -34,6 +34,7 @@ import { AuthProvider } from "../shared/context/AuthContext.jsx";
 import {
   ProtectedRoute,
   PublicOnlyRoute,
+  RoleHomeRoute,
 } from "../shared/routes/RouteGuards.jsx";
 import PageLoader from "../shared/components/PageLoader.jsx";
 
@@ -81,7 +82,14 @@ const App = () => {
       />
       <Routes>
           <Route element={<Layout />}>
-            <Route path="/" element={<Landing />} />
+            <Route
+              path="/"
+              element={
+                <RoleHomeRoute>
+                  <Landing />
+                </RoleHomeRoute>
+              }
+            />
             <Route path="/movies" element={<MoviesPage />} />
             <Route path="/movies/:id" element={<MovieDetail />} />
             <Route path="/locations" element={<Locations />} />

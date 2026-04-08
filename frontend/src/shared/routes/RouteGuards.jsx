@@ -47,3 +47,14 @@ export const PublicOnlyRoute = () => {
   return <Outlet />;
 };
 
+export const RoleHomeRoute = ({ children }) => {
+  const { isAuthenticated, loading, user } = useAuth();
+
+  if (loading) return <RouteLoading />;
+
+  if (isAuthenticated && user?.role === "admin") {
+    return <Navigate to="/admin" replace />;
+  }
+
+  return children;
+};
