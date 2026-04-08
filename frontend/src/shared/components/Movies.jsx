@@ -22,6 +22,7 @@ import { API_BASE_URL, API_SERVER_URL } from "../config/api";
 
 const FALLBACK_POSTER =
   "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1000&auto=format&fit=crop";
+const POSTER_ASPECT_RATIO = "2 / 3";
 
 const getMoviePosterUrl = (poster) => {
   if (!poster) return FALLBACK_POSTER;
@@ -91,8 +92,12 @@ const MovieCard = ({ movie }) => {
         alt={`${movie.title} poster`}
         image={movie.image}
         sx={{
-          height: { xs: 205, sm: 360 },
+          width: "100%",
+          aspectRatio: POSTER_ASPECT_RATIO,
+          height: "auto",
           objectFit: "cover",
+          objectPosition: "center",
+          display: "block",
         }}
       />
 
