@@ -35,7 +35,6 @@ import dhankutaImg from "../../assets/location/Dhankuta.png";
 import damakImg from "../../assets/location/damak.png";
 import lumbiniImg from "../../assets/location/lumbini.png";
 import birgunjImg from "../../assets/location/birgunj.png";
-import logo from "../../assets/logo.svg";
 
 const getProfileInitials = (name) => {
   const parts = String(name || "")
@@ -818,12 +817,10 @@ const Navbar = () => {
         <Link
           to="/"
           onClick={() => setOpen(false)}
-          className="inline-flex items-center gap-2 text-lg font-black tracking-tight text-text-primary md:text-xl"
+          className="inline-flex items-baseline gap-1 text-lg font-black tracking-tight md:text-xl"
         >
-          <span className="inline-flex h-7 w-7 items-center justify-center rounded bg-accent text-white">
-           <img src={logo} alt="Cinema Hub Logo" />
-          </span>
-         
+          <span className="text-white">Cinema</span>
+          <span className="text-red-500">Hub</span>
         </Link>
 
         <ul

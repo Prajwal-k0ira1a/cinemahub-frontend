@@ -509,7 +509,7 @@ export default function Landing() {
               >
                 Why CinemaHub
               </Typography>
-              <Typography variant="h3" sx={{ mt: 1, fontWeight: 900, lineHeight: 1.15 }}>
+              <Typography variant="h3" sx={{ mt: 1, fontWeight: 900, lineHeight: 1.15, color: '#fff' }}>
                 A more professional way to discover cinemas, movies, and showtimes
               </Typography>
               <Typography sx={{ mt: 2, color: "rgba(255,255,255,0.72)", lineHeight: 1.9, maxWidth: 620 }}>
